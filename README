@@ -1,17 +1,17 @@
-ZeroBPMFInput v0.1
+﻿ZeroBPMFInput v0.1
 Copyright (c) 2008 Zero, Chien-An Cho
 
-�o�O�@�ӵ� Android �ϥΪ��`����J�k�A�ثe�bG1�W��ڴ��չL�i�H�ϥΡC
+這是一個給 Android 使用的注音輸入法，目前在G1上實際測試過可以使用。
 This is a BPMF(Phonetic) input method for Android. It has been tested on T-mobile G1.
 
 == Usage ==
 
-  �z���Ӧb�w�˫�Ұʳo���{���C�Ĥ@���ҰʮɡA�{���|�۰ʥѺ����W�U���`����Ʈw�C
-  ���ۦ��{���|���U�b�t�γq�����A���z�ݭn��J��r���ɭԽЩԤU�q���M��C
-  �åB�I���J�k�A�M��ϥ���L��J�����ƻs�A�{���N�|�۰ʱN��r�ƻs��ŶKï���A
-  �åB���z��^�C�z�u�ݭn�A�K�W���r�ؤ��N�i�H�F�C�o�O�ثe Android ���䴩IME���Ȯɩ�
-  �ѨM��סC���z���Q�n�ϥο�J�k�F�A�i�H�I������J�k�C��J�k�h�X�ɷ|�M����q���Ϫ�
-  �T���C
+  您應該在安裝後啟動這隻程式。第一次啟動時，程式會自動由網路上下載注音資料庫。
+  接著此程式會註冊在系統通知中，當您需要輸入文字的時候請拉下通知清單。
+  並且點選輸入法，然後使用鍵盤輸入後選取複製，程式將會自動將文字複製到剪貼簿中，
+  並且幫您返回。您只需要再貼上到文字框中就可以了。這是目前 Android 不支援IME的暫時性
+  解決方案。當您不想要使用輸入法了，可以點結束輸入法。輸入法退出時會清除於通知區的
+  訊息。
 
   You should start this program after installed. For the first launch, this program will
   download phonetic database from Internet. After initiated, this program will register
@@ -24,7 +24,7 @@ This is a BPMF(Phonetic) input method for Android. It has been tested on T-mobil
 
 == Known Issues ==
 
-  1. �z�ثe�����J������L�W�S�����Ÿ��A�ϥ�Alt��~��ϥΪ��]����C
+  1. 您目前不能輸入實體鍵盤上沒有的符號，使用Alt鍵才能使用的也不行。
      You can't type some symbol which is not have a key on the physical keyboard, even it can inputed by using Alt key.
 
 == License ==
