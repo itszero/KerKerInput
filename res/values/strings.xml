@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="app_name">ZeroBPMFInput</string>
+	<string name="eng_label">[英數] Left-Alt 切換</string>
+	<string name="bpmf_label">[注音]</string>
+<string name="download_db">準備中...\n正在下載輸入法資料庫，請稍後...</string>
+</resources>

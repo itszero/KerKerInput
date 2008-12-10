@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:orientation="vertical"
+android:layout_width="fill_parent"
+android:layout_height="fill_parent"
+android:id="@+id/layout"
+>
+<TextView
+android:layout_width="fill_parent"
+android:layout_height="wrap_content"
+android:text="ZeroBPMFInput 中文輸入法 "
+android:textSize="10pt"/>
+<EditText android:id="@+id/text"
+android:layout_width="fill_parent"
+android:layout_height="wrap_content"
+android:text=""
+android:textSize="10pt"/>
+
+<TextView android:id="@+id/buffer"
+android:layout_width="fill_parent"
+android:layout_height="wrap_content"
+android:text="@string/eng_label" android:textSize="10pt"/>
+
+<TextView android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+
+<Button android:id="@+id/CopyButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:autoText="false" android:text="複製" android:textSize="10pt"></Button>
+<Button android:id="@+id/EndButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:autoText="false" android:text="關閉輸入法" android:textSize="10pt"></Button>
+</LinearLayout>
