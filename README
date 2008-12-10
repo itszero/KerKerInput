@@ -1,0 +1,50 @@
+ZeroBPMFInput v0.1
+Copyright (c) 2008 Zero, Chien-An Cho
+
+這是一個給 Android 使用的注音輸入法，目前在G1上實際測試過可以使用。
+This is a BPMF(Phonetic) input method for Android. It has been tested on T-mobile G1.
+
+== Usage ==
+
+  您應該在安裝後啟動這隻程式。第一次啟動時，程式會自動由網路上下載注音資料庫。
+  接著此程式會註冊在系統通知中，當您需要輸入文字的時候請拉下通知清單。
+  並且點選輸入法，然後使用鍵盤輸入後選取複製，程式將會自動將文字複製到剪貼簿中，
+  並且幫您返回。您只需要再貼上到文字框中就可以了。這是目前 Android 不支援IME的暫時性
+  解決方案。當您不想要使用輸入法了，可以點結束輸入法。輸入法退出時會清除於通知區的
+  訊息。
+
+  You should start this program after installed. For the first launch, this program will
+  download phonetic database from Internet. After initiated, this program will register
+  itself in the notification area. When you need to input, please drag down the notification
+  list and click on the IME. Use the keyboard to input, and click copy. The program will copy
+  it to clipbarod and return to the original program. Just paste it in the textbox and done.
+  This is a temporary workaround for Android which does not support IME currently. When you
+  don't want to use it anymore, you can click Exit IME. The program will clear the message in
+  notification area when exiting.
+
+== Known Issues ==
+
+  1. 您目前不能輸入實體鍵盤上沒有的符號，使用Alt鍵才能使用的也不行。
+     You can't type some symbol which is not have a key on the physical keyboard, even it can inputed by using Alt key.
+
+== License ==
+
+This program is licensed under MIT license.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
