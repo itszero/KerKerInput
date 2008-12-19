@@ -24,7 +24,7 @@
  * 
  * ZeroBPMFInputMethod: the TextKeyListener implement for the BPMF input.
  */
-package idv.Zero.ZeroBPMFInput;
+package idv.Zero.KerKerInput;
 
 import android.text.method.TextKeyListener;
 import android.widget.TextView;
@@ -46,7 +46,7 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class ZeroBPMFInputMethod extends TextKeyListener
+public class KerKerInputMethod extends TextKeyListener
 {
 	private TextView inputCandidatesView;
 	private static final int STATE_INPUT = 0;
@@ -69,7 +69,7 @@ public class ZeroBPMFInputMethod extends TextKeyListener
 	
 	private SQLiteDatabase db;
 	
-	public ZeroBPMFInputMethod(Context c, TextView tv)
+	public KerKerInputMethod(Context c, TextView tv)
 	{
 		super(null, false);
 		inputCandidatesView = tv;
@@ -84,10 +84,10 @@ public class ZeroBPMFInputMethod extends TextKeyListener
 		{
 			System.out.println("Error, no database file found. Downloading...");
 			final NotificationManager nm = (NotificationManager)c.getSystemService("notification");
-			Notification n = new Notification(R.drawable.icon, "ZeroBPMF: 正在下載資料庫...", System.currentTimeMillis());
-			PendingIntent contentIntent = PendingIntent.getActivity(c, 0, new Intent(c, ZeroBPMFInput.class), 0);
+			Notification n = new Notification(R.drawable.icon, "KerKer: 正在下載資料庫...", System.currentTimeMillis());
+			PendingIntent contentIntent = PendingIntent.getActivity(c, 0, new Intent(c, KerKerInputUI.class), 0);
 			n.flags = Notification.FLAG_NO_CLEAR;
-			n.setLatestEventInfo(c, "ZeroBPMFInput", "正在下載資料庫...", contentIntent);
+			n.setLatestEventInfo(c, "科科輸入法", "正在下載資料庫...", contentIntent);
 			nm.notify(DBDOWNLOAD_NOTIFICATION, n);
 
 			// Create the database (and the directories required) then close it.
@@ -169,10 +169,30 @@ public class ZeroBPMFInputMethod extends TextKeyListener
 					break;
 					
 				default:
+					char keyRaw = (char)event.getUnicodeChar();
+					// Workaround for G1
+					if (keyCode == KeyEvent.KEYCODE_I && event.isAltPressed())
+					{
+						keyCode = KeyEvent.KEYCODE_MINUS;
+						keyRaw = '-';
+					}
+					if (keyCode == KeyEvent.KEYCODE_J && event.isAltPressed())
+					{
+						keyCode = KeyEvent.KEYCODE_SEMICOLON;
+						keyRaw = ';';
+					}
+					if (keyCode == KeyEvent.KEYCODE_PERIOD && event.isAltPressed())
+					{
+						keyCode = KeyEvent.KEYCODE_SLASH;
+						keyRaw = '/';
+					}
+									
 					String keyName = K2N.get(keyCode);
 					if (keyName != null)
+					{
 						inputBuffer.append(keyName);
-					inputBufferRaw.append((char)event.getUnicodeChar());
+						inputBufferRaw.append(keyRaw);
+					}
 					break;
 				}
 				

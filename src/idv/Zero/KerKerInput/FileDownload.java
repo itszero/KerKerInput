@@ -24,7 +24,7 @@
  * 
  * FileDownload: Download file from specified URL and save to local file
  */
-package idv.Zero.ZeroBPMFInput;
+package idv.Zero.KerKerInput;
 
 import java.io.*;
 import java.net.*;

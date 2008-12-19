@@ -5,7 +5,7 @@
  * should not be modified by hand.
  */
 
-package idv.Zero.ZeroBPMFInput;
+package idv.Zero.KerKerInput;
 
 public final class R {
     public static final class attr {

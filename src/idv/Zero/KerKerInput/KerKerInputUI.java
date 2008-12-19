@@ -24,7 +24,7 @@
  *
  * ZeroBPMFInput: The UI of the input method
  */
-package idv.Zero.ZeroBPMFInput;
+package idv.Zero.KerKerInput;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -42,7 +42,7 @@ import android.widget.EditText;
 import android.text.method.TextKeyListener;
 import android.text.ClipboardManager;
 
-public class ZeroBPMFInput extends Activity {
+public class KerKerInputUI extends Activity {
 	private static final int INPUT_NOTIFICATION = 0x1004;
 	
     /** Called when the activity is first created. */
@@ -53,7 +53,7 @@ public class ZeroBPMFInput extends Activity {
         final NotificationManager nm = (NotificationManager)this.getSystemService("notification");
         
         TextView tvBuffer = (TextView)findViewById(R.id.buffer);
-        TextKeyListener bpmf = new ZeroBPMFInputMethod(this, tvBuffer);
+        TextKeyListener bpmf = new KerKerInputMethod(this, tvBuffer);
         
         final EditText txtBox = (EditText)findViewById(R.id.text);
         txtBox.setKeyListener(bpmf);
@@ -66,9 +66,9 @@ public class ZeroBPMFInput extends Activity {
 			public void onClick(View v) {
 				cm.setText(txtBox.getText() + " ");
 				
-				new AlertDialog.Builder(c).setTitle("ZeroBPMF 訊息").setMessage("複製完成，請在原程式貼上。").setNeutralButton("關閉", new DialogInterface.OnClickListener(){
+				new AlertDialog.Builder(c).setTitle("科科輸入法").setMessage("複製完成，請在原程式貼上。").setNeutralButton("關閉", new DialogInterface.OnClickListener(){
 					public void onClick(DialogInterface dialog, int which) {
-						ZeroBPMFInput.this.finish();
+						KerKerInputUI.this.finish();
 					}
 				}).show();
 			}
@@ -77,14 +77,14 @@ public class ZeroBPMFInput extends Activity {
         btnExit.setOnClickListener(new Button.OnClickListener() {
         	public void onClick(View v) {
         		nm.cancel(INPUT_NOTIFICATION);
-        		ZeroBPMFInput.this.finish();
+        		KerKerInputUI.this.finish();
         	}
         });
         
-		Notification n = new Notification(R.drawable.icon, "ZeroBPMF: 準備完成", System.currentTimeMillis());
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, ZeroBPMFInput.class), 0);
+		Notification n = new Notification(R.drawable.icon, "KerKer: 準備完成", System.currentTimeMillis());
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, KerKerInputUI.class), 0);
 		n.flags = Notification.FLAG_NO_CLEAR;
-		n.setLatestEventInfo(this, "ZeroBPMFInput", "點選使用注音輸入法", contentIntent);
+		n.setLatestEventInfo(this, "科科輸入法", "點選使用注音輸入法", contentIntent);
 		nm.notify(INPUT_NOTIFICATION, n);
     }
 }
