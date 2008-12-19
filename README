@@ -4,6 +4,11 @@ Copyright (c) 2008 Zero, Chien-An Cho
 這是一個給 Android 使用的注音輸入法，目前在G1上實際測試過可以使用。
 This is a BPMF(Phonetic) input method for Android. It has been tested on T-mobile G1.
 
+== How To Get It ==
+
+  您現在可以在 Android Market 的 Tools 中找到他，名稱為 "KerKerInput 科科輸入法"。
+  You can find it under Tools category in Android Market, named "KerKerInput 科科輸入法".
+
 == Usage ==
 
   您應該在安裝後啟動這隻程式。第一次啟動時，程式會自動由網路上下載注音資料庫。
