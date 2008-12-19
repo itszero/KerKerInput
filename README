@@ -24,9 +24,6 @@ This is a BPMF(Phonetic) input method for Android. It has been tested on T-mobil
 
 == Known Issues ==
 
-  1. 您目前不能輸入實體鍵盤上沒有的符號，使用Alt鍵才能使用的也不行。
-     You can't type some symbol which is not have a key on the physical keyboard, even it can inputed by using Alt key.
-
 == License ==
 
 This program is licensed under MIT license.
