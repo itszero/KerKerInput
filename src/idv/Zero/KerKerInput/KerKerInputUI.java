@@ -1,4 +1,4 @@
-/* ZeroBPMFInput for Android Platform Version 0.1
+ï»¿/* ZeroBPMFInput for Android Platform Version 0.1
  * 
  * Copyright (c) 2008 Zero, Chien-An Cho
  * (MIT License)
@@ -22,9 +22,14 @@
  * 
  * Contact:: itszero at gmail dot com
  *
- * ZeroBPMFInput: The UI of the input method
+ * KerKerInputUI: The UI of the input method
  */
 package idv.Zero.KerKerInput;
+
+import idv.Zero.KerKerInput.VirtualKeyboard.KeyButton;
+import idv.Zero.KerKerInput.VirtualKeyboard.KeyTouchHandler;
+
+import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -34,9 +39,13 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.EditText;
 import android.text.method.TextKeyListener;
@@ -44,47 +53,171 @@ import android.text.ClipboardManager;
 
 public class KerKerInputUI extends Activity {
 	private static final int INPUT_NOTIFICATION = 0x1004;
+	private ArrayList<Button> candidate_buttons;
+	private String updateServiceURL = "http://zero.itszero.info/KerKerInput/version.dat";
+	public KerKerInputMethod kIME = null;
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
         final NotificationManager nm = (NotificationManager)this.getSystemService("notification");
         
+        initSoftKeys();
         TextView tvBuffer = (TextView)findViewById(R.id.buffer);
-        TextKeyListener bpmf = new KerKerInputMethod(this, tvBuffer);
+        kIME = new KerKerInputMethod(this, tvBuffer, candidate_buttons);
+        TextKeyListener bpmf = kIME;
         
         final EditText txtBox = (EditText)findViewById(R.id.text);
         txtBox.setKeyListener(bpmf);
+        KeyTouchHandler.setParam(kIME, txtBox);
         
         final Button btnCopy = (Button)findViewById(R.id.CopyButton);
+        final Button btnSW = (Button)findViewById(R.id.CESwitchButton);
         final ClipboardManager cm = (ClipboardManager)getSystemService("clipboard");
         
         final Context c = this;
+        btnSW.setOnClickListener(new Button.OnClickListener(){
+			public void onClick(View v) {
+				kIME.handleClick(txtBox, 70);
+			}
+        });
         btnCopy.setOnClickListener(new Button.OnClickListener(){
 			public void onClick(View v) {
 				cm.setText(txtBox.getText() + " ");
 				
-				new AlertDialog.Builder(c).setTitle("¬ì¬ì¿é¤Jªk").setMessage("½Æ»s§¹¦¨¡A½Ð¦b­ìµ{¦¡¶K¤W¡C").setNeutralButton("Ãö³¬", new DialogInterface.OnClickListener(){
+				new AlertDialog.Builder(c).setTitle(R.string.app_name).setMessage(R.string.msg_copy).setNeutralButton(R.string.close, new DialogInterface.OnClickListener(){
 					public void onClick(DialogInterface dialog, int which) {
 						KerKerInputUI.this.finish();
 					}
 				}).show();
 			}
         });
-        Button btnExit = (Button)findViewById(R.id.EndButton);
-        btnExit.setOnClickListener(new Button.OnClickListener() {
-        	public void onClick(View v) {
-        		nm.cancel(INPUT_NOTIFICATION);
-        		KerKerInputUI.this.finish();
-        	}
-        });
         
-		Notification n = new Notification(R.drawable.icon, "KerKer: ·Ç³Æ§¹¦¨", System.currentTimeMillis());
+		Notification n = new Notification(R.drawable.icon, "KerKer: æº–å‚™å®Œæˆ", System.currentTimeMillis());
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, KerKerInputUI.class), 0);
 		n.flags = Notification.FLAG_NO_CLEAR;
-		n.setLatestEventInfo(this, "¬ì¬ì¿é¤Jªk", "ÂI¿ï¨Ï¥Îª`­µ¿é¤Jªk", contentIntent);
+		n.setLatestEventInfo(this, "ç§‘ç§‘è¼¸å…¥æ³•", "é»žé¸ä½¿ç”¨æ³¨éŸ³è¼¸å…¥æ³•", contentIntent);
 		nm.notify(INPUT_NOTIFICATION, n);
+		setKeyButtonTexts("BPMF");
+		
+		// Check the latest version
+		try {
+    		int currentVerCode = this.getPackageManager().getPackageInfo("idv.Zero.KerKerInput", 0).versionCode;
+    		String currentVersion = this.getPackageManager().getPackageInfo("idv.Zero.KerKerInput", 0).versionName;
+    		final String remoteVerInfo[] = FileDownload.getContent(updateServiceURL).split("\n");
+    		if (remoteVerInfo.length >= 4)
+    		{
+    		    int remoteVerCode = Integer.parseInt(remoteVerInfo[0]);
+    		    if (remoteVerCode > currentVerCode)
+    		    {
+    		        String update_str = this.getResources().getText(R.string.update_str).toString().replace("{CURRENT_VER}", currentVersion).replace("{REMOTE_VER}", remoteVerInfo[1]).replace("{UPDATE_MSG}", remoteVerInfo[3].replace("\\n", "\n")+"\n");
+                    new AlertDialog.Builder(c).setTitle(R.string.app_name).setMessage(update_str).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener(){
+                        public void onClick(DialogInterface dialog, int which) {
+                            KerKerInputUI.this.finish();
+                        }
+                    }).setPositiveButton(R.string.download, new DialogInterface.OnClickListener(){
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent i = new Intent(Intent.ACTION_VIEW);
+                            i.setData(Uri.parse(remoteVerInfo[2]));
+                            KerKerInputUI.this.startActivity(i);
+                            KerKerInputUI.this.finish();
+                        }
+                    }).show();		        
+    		    }
+    		}
+		}
+		catch(Exception ex)
+		{
+		    ex.printStackTrace();
+		}
     }
+    
+    @Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+
+		menu.add(Menu.NONE, 0, Menu.NONE, getString(R.string.about));
+		menu.findItem(0).setIcon(android.R.drawable.ic_menu_info_details);
+		menu.add(Menu.NONE, 1, Menu.NONE, getString(R.string.finish));
+		menu.findItem(1).setIcon(android.R.drawable.ic_menu_delete);
+		
+		return true;
+	}
+
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case 0:
+			Intent aboutIntent = new Intent();
+			aboutIntent.setClass(getApplicationContext(), KerKerInputAbout.class);
+			this.startActivity(aboutIntent);
+			return true;
+		case 1:
+			final NotificationManager nm = (NotificationManager) this
+					.getSystemService("notification");
+			nm.cancel(INPUT_NOTIFICATION);
+			KerKerInputUI.this.finish();
+			return true;
+		}
+		return false;
+	}
+	
+	// Virtual Keyboard
+	private void initSoftKeys() {
+		candidate_buttons = new ArrayList<Button>();
+		candidate_buttons.add((Button) findViewById(R.id.candidate_1));
+		candidate_buttons.add((Button) findViewById(R.id.candidate_2));
+		candidate_buttons.add((Button) findViewById(R.id.candidate_3));
+		candidate_buttons.add((Button) findViewById(R.id.candidate_4));
+		candidate_buttons.add((Button) findViewById(R.id.candidate_5));
+		candidate_buttons.add((Button) findViewById(R.id.candidate_6));
+
+		ArrayList<KeyTouchHandler> softkeys = new ArrayList<KeyTouchHandler>();
+		softkeys.add(new KeyTouchHandler((ImageButton) findViewById(R.id.softkey_bpmf), 0));
+		softkeys.add(new KeyTouchHandler((ImageButton) findViewById(R.id.softkey_dtnl), 1));
+		softkeys.add(new KeyTouchHandler((ImageButton) findViewById(R.id.softkey_gkh),	2));
+		softkeys.add(new KeyTouchHandler((ImageButton) findViewById(R.id.softkey_jqx),	3));
+		softkeys.add(new KeyTouchHandler((ImageButton) findViewById(R.id.softkey_zhchshr), 4));
+		softkeys.add(new KeyTouchHandler((ImageButton) findViewById(R.id.softkey_zcs), 5));
+		softkeys.add(new KeyTouchHandler((ImageButton) findViewById(R.id.softkey_iuyu),	6));
+		softkeys.add(new KeyTouchHandler((ImageButton) findViewById(R.id.softkey_aoeee), 7));
+		softkeys.add(new KeyTouchHandler((ImageButton) findViewById(R.id.softkey_aieiauou), 8));
+		softkeys.add(new KeyTouchHandler((ImageButton) findViewById(R.id.softkey_anenangenger), 9));
+		softkeys.add(new KeyTouchHandler((ImageButton) findViewById(R.id.softkey_12345), 10));
+		softkeys.add(new KeyTouchHandler((ImageButton) findViewById(R.id.softkey_control), 11));
+
+		for (int i=0;i<6;++i) {
+			final int idx = i;
+			candidate_buttons.get(i).setOnClickListener(new Button.OnClickListener(){
+				public void onClick(View v) {
+					kIME.handleClick((EditText)findViewById(R.id.text), 60 + idx);
+				}
+			});
+		}
+	}
+	
+	private void setKeyButtonTexts(String type)
+	{
+		if (type == "BPMF")
+		{
+			((KeyButton)findViewById(R.id.softkey_bpmf)).setTexts(new String[]{"ã„…", "ã„†", "ã„‡", "ã„ˆ"});
+			((KeyButton)findViewById(R.id.softkey_dtnl)).setTexts(new String[]{"ã„‰", "ã„Š", "ã„‹", "ã„Œ"});
+			((KeyButton)findViewById(R.id.softkey_gkh)).setTexts(new String[]{"ã„", "ã„Ž", "ã„"});
+			((KeyButton)findViewById(R.id.softkey_jqx)).setTexts(new String[]{"ã„", "ã„‘", "ã„’"});
+			((KeyButton)findViewById(R.id.softkey_zhchshr)).setTexts(new String[]{"ã„“", "ã„”", "ã„•", "ã„–"});
+			((KeyButton)findViewById(R.id.softkey_zcs)).setTexts(new String[]{"ã„—", "ã„˜", "ã„™"});
+			((KeyButton)findViewById(R.id.softkey_iuyu)).setTexts(new String[]{"ä¸€", "ã„¨", "ã„©"});
+			((KeyButton)findViewById(R.id.softkey_aoeee)).setTexts(new String[]{"ã„š", "ã„›", "ã„œ", "ã„"});
+			((KeyButton)findViewById(R.id.softkey_aieiauou)).setTexts(new String[]{"ã„ž", "ã„Ÿ", "ã„ ", "ã„¡"});
+			((KeyButton)findViewById(R.id.softkey_anenangenger)).setTexts(new String[]{"ã„¢", "ã„£", "ã„¤", "ã„¥", "ã„¦"});
+			((KeyButton)findViewById(R.id.softkey_12345)).setTexts(new String[]{"ä¸€", "äºŒ", "ä¸‰", "å››", "è¼•"});
+			((KeyButton)findViewById(R.id.softkey_control)).setTexts(new String[]{"BS", "å‰", "", "å¾Œ"});
+		}
+		else if (type == "ENG")
+		{
+		
+		}
+	}
 }

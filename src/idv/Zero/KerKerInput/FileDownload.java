@@ -51,4 +51,26 @@ public class FileDownload {
 		
 		return true;
 	}
+	
+	public static String getContent(String remoteUrl)
+    {
+	    StringBuffer sb = new StringBuffer();
+        try {
+            URL url = new URL(remoteUrl);
+            InputStream in = url.openConnection().getInputStream();
+            
+            byte[] buffer = new byte[1024];
+            int blockSize;
+            while ((blockSize = in.read(buffer)) != -1) {
+                sb.append(new String(buffer, 0, blockSize));
+            }
+            
+            in.close();
+        }
+        catch (Exception exception) {
+            return "";
+        }
+        
+        return sb.toString();
+    }
 }

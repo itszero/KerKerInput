@@ -10,19 +10,20 @@ android:id="@+id/layout"
 	android:layout_height="wrap_content"
 	android:text=""
 	android:textSize="10pt"/>
+	
 	<TableLayout android:id="@+id/TitleBar" android:layout_width="fill_parent" android:layout_height="wrap_content">
 	<TableRow>
 		<Button android:id="@+id/CopyButton" android:layout_width="fill_parent" android:layout_height="wrap_content" android:autoText="false" android:text="複製" android:textSize="10pt" android:layout_marginRight="10px" android:layout_weight="1"></Button>
 		<Button android:id="@+id/CESwitchButton" android:layout_width="fill_parent" android:layout_height="wrap_content" android:autoText="false" android:text="中/英" android:textSize="10pt" android:layout_marginRight="10px" android:layout_weight="1"></Button>
 	</TableRow>
 	</TableLayout>
-	
+		
 	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
 	android:id="@+id/vkb_layout"
-	android:visibility="visible"
+	android:visibility="gone"
 	>
 		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 			android:orientation="horizontal" android:layout_width="fill_parent"
@@ -114,5 +115,5 @@ android:id="@+id/layout"
 	<TextView android:id="@+id/buffer"
 	android:layout_width="fill_parent"
 	android:layout_height="wrap_content"
-	android:text="@string/bpmf_label" android:textSize="8pt" android:layout_marginLeft="5px"/>
+	android:text="@string/bpmf_label" android:textSize="8pt"/>
 </LinearLayout>

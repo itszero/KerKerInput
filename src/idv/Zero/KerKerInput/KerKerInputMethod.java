@@ -1,4 +1,4 @@
-/* ZeroBPMFInput for Android Platform Version 0.1
+Ôªø/* ZeroBPMFInput for Android Platform Version 0.1
  * 
  * Copyright (c) 2008 Zero, Chien-An Cho
  * (MIT License)
@@ -22,11 +22,13 @@
  * 
  * Contact:: itszero at gmail dot com
  * 
- * ZeroBPMFInputMethod: the TextKeyListener implement for the BPMF input.
+ * KerKerInputMethod: the TextKeyListener implement for the BPMF input.
  */
 package idv.Zero.KerKerInput;
 
 import android.text.method.TextKeyListener;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -53,26 +55,31 @@ public class KerKerInputMethod extends TextKeyListener
 	private static final int STATE_CHOOSE = 1;
 	private static final int STATE_ENGLISH = 0;
 	private static final int STATE_BPMF = 1;
+	public static final int MODE_PHYSICAL_KB = 0;
+	public static final int MODE_VIRTUAL_KB = 1;
 	private StringBuilder inputBuffer = new StringBuilder();
 	private StringBuilder inputBufferRaw = new StringBuilder();
-	private int state_ime = STATE_ENGLISH;
+	private int state_ime = STATE_BPMF;
 	private int state = STATE_INPUT;
+	private int input_mode = MODE_PHYSICAL_KB;
 	private boolean bypassKeyUp = false;
 	private HashMap<Integer, String> K2N;
 	private Cursor currentQuery;
-	private static final int CANDIDATES_PER_PAGE = 5;
+	private static int CANDIDATES_PER_PAGE = 5;
 	private int currentPage = 0;
 	private int totalPages = 0;
 	private ArrayList<String> candidates;
+	private ArrayList<Button> candidate_buttons;
 	private static final int DBDOWNLOAD_NOTIFICATION = 0x1005;
-	private static final String DATABASE_URL = "http://zero.itszero.info/works/cin.db";
+	private static final String DATABASE_URL = "http://zero.itszero.info/KerKerInput/cin.db";
 	
 	private SQLiteDatabase db;
 	
-	public KerKerInputMethod(Context c, TextView tv)
+	public KerKerInputMethod(Context c, TextView tv, ArrayList<Button> candidate_buttons)
 	{
 		super(null, false);
 		inputCandidatesView = tv;
+		this.candidate_buttons = candidate_buttons;
 		
 		initKeyNameData();
 		try
@@ -84,10 +91,10 @@ public class KerKerInputMethod extends TextKeyListener
 		{
 			System.out.println("Error, no database file found. Downloading...");
 			final NotificationManager nm = (NotificationManager)c.getSystemService("notification");
-			Notification n = new Notification(R.drawable.icon, "KerKer: •ø¶b§U∏¸∏ÍÆ∆Æw...", System.currentTimeMillis());
+			Notification n = new Notification(R.drawable.icon, "KerKer: Ê≠£Âú®‰∏ãËºâË≥áÊñôÂ∫´...", System.currentTimeMillis());
 			PendingIntent contentIntent = PendingIntent.getActivity(c, 0, new Intent(c, KerKerInputUI.class), 0);
 			n.flags = Notification.FLAG_NO_CLEAR;
-			n.setLatestEventInfo(c, "¨Ï¨ÏøÈ§J™k", "•ø¶b§U∏¸∏ÍÆ∆Æw...", contentIntent);
+			n.setLatestEventInfo(c, "ÁßëÁßëËº∏ÂÖ•Ê≥ï", "Ê≠£Âú®‰∏ãËºâË≥áÊñôÂ∫´...", contentIntent);
 			nm.notify(DBDOWNLOAD_NOTIFICATION, n);
 
 			// Create the database (and the directories required) then close it.
@@ -102,7 +109,89 @@ public class KerKerInputMethod extends TextKeyListener
 		db.setLocale(Locale.TRADITIONAL_CHINESE);
 	}
 	
+	public void setInputMode(int mode)
+	{
+		this.input_mode = mode;
+		if (mode == MODE_PHYSICAL_KB)
+			CANDIDATES_PER_PAGE = 5;
+		else if (mode == MODE_VIRTUAL_KB)
+			CANDIDATES_PER_PAGE = 6;
+	}
+	
+	public void handleClick(EditText target, int touchKeyCode)
+	{
+		// When input in touch mode, we emulate the keyboard input.
+		// Using ` as escape sequence since it's not used in BPMF input.
+		String translate = "1qaz`2wsx`edc``rfv``5tgb`yhn``ujm``8ik,`9ol.`0p;/- 6347";
+		String key;
+		int keyCode = 0;
+		if (touchKeyCode >= translate.length())
+		{
+			if (touchKeyCode == 55)
+				keyCode = KeyEvent.KEYCODE_DEL;
+			else if (touchKeyCode == 56)
+				keyCode = KeyEvent.KEYCODE_DPAD_LEFT;
+			else if (touchKeyCode == 58)
+				keyCode = KeyEvent.KEYCODE_DPAD_RIGHT;
+			else if (touchKeyCode == 70)
+				keyCode = KeyEvent.KEYCODE_ALT_LEFT;
+			else if (touchKeyCode >= 60 && touchKeyCode < 70)
+			{
+				try {
+					keyCode = KeyEvent.class.getDeclaredField("KEYCODE_" + new Integer(touchKeyCode - 60 + 1).toString()).getInt(null);
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (SecurityException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				} catch (NoSuchFieldException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		else
+		{
+			key = translate.substring(touchKeyCode, touchKeyCode + 1);
+			System.out.println("Get VKB [" + key + "]");
+			if (key.equals("/"))
+				key = "SLASH";
+			else if (key.equals(","))
+				key = "COMMA";
+			else if (key.equals("."))
+				key = "PERIOD";
+			else if (key.equals("-"))
+				key = "MINUS";
+			else if (key.equals(" "))
+				key = "SPACE";
+			else if (key.equals(";"))
+				key = "SEMICOLON";
+			
+			try {
+				keyCode = KeyEvent.class.getField("KEYCODE_" + key.toUpperCase()).getInt(null);
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (NoSuchFieldException e) {
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		KeyEvent ed = new KeyEvent(1, 1, KeyEvent.ACTION_DOWN, keyCode, 0);
+		KeyEvent eu = new KeyEvent(1, 1, KeyEvent.ACTION_UP, keyCode, 0);
+		this.onKeyDown(null, target.getText(), keyCode, ed);
+		this.onKeyUp(null, target.getText(), keyCode, eu);
+	}
+	
 	public boolean onKeyDown(View view, Editable content, int keyCode, KeyEvent event) {
+		if (event.getDownTime() == 1)
+			this.setInputMode(MODE_VIRTUAL_KB);
+		else
+			this.setInputMode(MODE_PHYSICAL_KB);
+		
 		if (keyCode == KeyEvent.KEYCODE_ALT_LEFT)
 		{
 			switch (state_ime)
@@ -122,6 +211,7 @@ public class KerKerInputMethod extends TextKeyListener
 			}
 			
 			bypassKeyUp = true;
+			return true;
 		}
 		
 		return false;
@@ -193,6 +283,9 @@ public class KerKerInputMethod extends TextKeyListener
 						inputBuffer.append(keyName);
 						inputBufferRaw.append(keyRaw);
 					}
+					// Â¶ÇÊûúÊòØÈü≥Ë™øÁ¨¶ËôüÔºåÁõ¥Êé•ÈÄ≤ÂÖ•ÈÅ∏Â≠óÊ®°Âºè„ÄÇ
+					if (keyRaw == '3' || keyRaw == '4' || keyRaw == '6' || keyRaw == '7')
+						state = STATE_CHOOSE;
 					break;
 				}
 				
@@ -205,7 +298,7 @@ public class KerKerInputMethod extends TextKeyListener
 					{
 						inputBuffer.delete(0, inputBuffer.length());
 						inputBufferRaw.delete(0, inputBufferRaw.length());
-						this.updateCandidates(" ß‰§£®ÏπÔ¿≥°C");
+						this.updateCandidates(" Êâæ‰∏çÂà∞Â∞çÊáâ„ÄÇ");
 						
 						// reset state
 						state = STATE_INPUT;
@@ -216,7 +309,6 @@ public class KerKerInputMethod extends TextKeyListener
 						totalPages = currentQuery.getCount() / CANDIDATES_PER_PAGE;
 						if (CANDIDATES_PER_PAGE  * totalPages < currentQuery.getCount())
 							totalPages++;
-						
 						
 						candidates = new ArrayList<String>();
 						
@@ -266,11 +358,16 @@ public class KerKerInputMethod extends TextKeyListener
 			default:
 				if (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9)
 				{
-					// Made a choice
-					content.append(candidates.get(currentPage * CANDIDATES_PER_PAGE + keyCode - KeyEvent.KEYCODE_0 - 1));
-					state = STATE_INPUT;
-					inputBuffer.delete(0, inputBuffer.length());
-					inputBufferRaw.delete(0, inputBufferRaw.length());
+				    // This prevents user hit tone symbol twice makes program crash.
+				    // It's because first sign interpreted as bpmf symbol, and second one is treated as candidate choose.
+				    // Also prevent user select non-exist candidates on physical kb.
+				    if ((currentPage * CANDIDATES_PER_PAGE + keyCode - KeyEvent.KEYCODE_0 - 1) < candidates.size())
+				    {
+				        content.append(candidates.get(currentPage * CANDIDATES_PER_PAGE + keyCode - KeyEvent.KEYCODE_0 - 1));
+				        state = STATE_INPUT;
+				        inputBuffer.delete(0, inputBuffer.length());
+				        inputBufferRaw.delete(0, inputBufferRaw.length());
+				    }
 				}
 				break;
 			}
@@ -279,7 +376,10 @@ public class KerKerInputMethod extends TextKeyListener
 			break;
 		}
 		
-		return true;
+		if (keyCode == KeyEvent.KEYCODE_MENU)
+			return false;
+		else
+			return true;
 	}
 	
 	private void updateCandidates(String msg)
@@ -295,61 +395,79 @@ public class KerKerInputMethod extends TextKeyListener
 			inputCandidatesView.append(" " + inputBuffer.toString());
 			if (state == STATE_CHOOSE)
 			{
-				inputCandidatesView.append(" ");
+				if (input_mode == MODE_PHYSICAL_KB)
+					inputCandidatesView.append(" ");
+				
 				for(int i = 0;i<CANDIDATES_PER_PAGE && (i + currentPage * CANDIDATES_PER_PAGE) < candidates.size();i++)
 				{
-					if (i > 0) inputCandidatesView.append(" ");
-					inputCandidatesView.append((i+1) + " " + candidates.get(i + currentPage * CANDIDATES_PER_PAGE));
+					String candidate_char = candidates.get(i + currentPage * CANDIDATES_PER_PAGE);
+					candidate_buttons.get(i).setVisibility(View.GONE);
+					switch(input_mode)
+					{
+					case MODE_PHYSICAL_KB:
+						if (i > 0) inputCandidatesView.append(" ");
+						inputCandidatesView.append((i+1) + " " + candidate_char);
+						break;
+					case MODE_VIRTUAL_KB:
+						candidate_buttons.get(i).setText(candidate_char);
+						candidate_buttons.get(i).setVisibility(View.VISIBLE);
+						break;
+					}
 				}
 				
 				inputCandidatesView.append(" " + (currentPage+1) + "/" + totalPages);
-			}			
+			}
+			else
+			{
+				for(int i = 0;i<CANDIDATES_PER_PAGE;i++)
+					candidate_buttons.get(i).setVisibility(View.GONE);
+			}
 		}
 	}
 	
 	private void initKeyNameData()
 	{
 		K2N = new HashMap<Integer, String>();			
-		K2N.put(KeyEvent.KEYCODE_COMMA,     "£Æ"); // ,
-		K2N.put(KeyEvent.KEYCODE_MINUS,     "£∑"); // -
-		K2N.put(KeyEvent.KEYCODE_PERIOD,    "£≤"); // .
-		K2N.put(KeyEvent.KEYCODE_SLASH,     "£∂"); // /
-		K2N.put(KeyEvent.KEYCODE_0,         "£≥"); // 0
-		K2N.put(KeyEvent.KEYCODE_1,         "£t"); // 1
-		K2N.put(KeyEvent.KEYCODE_2,         "£x"); // 2
-		K2N.put(KeyEvent.KEYCODE_3,         "£æ"); // 3
-		K2N.put(KeyEvent.KEYCODE_4,         "£ø"); // 4
-		K2N.put(KeyEvent.KEYCODE_5,         "£§"); // 5
-		K2N.put(KeyEvent.KEYCODE_6,         "£Ω"); // 6
-		K2N.put(KeyEvent.KEYCODE_7,         "£ª"); // 7
-		K2N.put(KeyEvent.KEYCODE_8,         "£´"); // 8
-		K2N.put(KeyEvent.KEYCODE_9,         "£Ø"); // 9
-		K2N.put(KeyEvent.KEYCODE_SEMICOLON, "£µ"); // ;
-		K2N.put(KeyEvent.KEYCODE_A,         "£v"); // a
-		K2N.put(KeyEvent.KEYCODE_B,         "£ß"); // b
-		K2N.put(KeyEvent.KEYCODE_C,         "£~"); // c
-		K2N.put(KeyEvent.KEYCODE_D,         "£}"); // d
-		K2N.put(KeyEvent.KEYCODE_E,         "£|"); // e
-		K2N.put(KeyEvent.KEYCODE_F,         "£¢"); // f
-		K2N.put(KeyEvent.KEYCODE_G,         "£¶"); // g
-		K2N.put(KeyEvent.KEYCODE_H,         "£©"); // h
-		K2N.put(KeyEvent.KEYCODE_I,         "£¨"); // i
-		K2N.put(KeyEvent.KEYCODE_J,         "£π"); // j
-		K2N.put(KeyEvent.KEYCODE_K,         "£≠"); // k
-		K2N.put(KeyEvent.KEYCODE_L,         "£±"); // l
-		K2N.put(KeyEvent.KEYCODE_M,         "£∫"); // m
-		K2N.put(KeyEvent.KEYCODE_N,         "£™"); // n
-		K2N.put(KeyEvent.KEYCODE_O,         "£∞"); // o
-		K2N.put(KeyEvent.KEYCODE_P,         "£¥"); // p
-		K2N.put(KeyEvent.KEYCODE_Q,         "£u"); // q
-		K2N.put(KeyEvent.KEYCODE_R,         "£°"); // r
-		K2N.put(KeyEvent.KEYCODE_S,         "£z"); // s
-		K2N.put(KeyEvent.KEYCODE_T,         "£•"); // t
-		K2N.put(KeyEvent.KEYCODE_U,         "£∏"); // u
-		K2N.put(KeyEvent.KEYCODE_V,         "££"); // v
-		K2N.put(KeyEvent.KEYCODE_W,         "£y"); // w
-		K2N.put(KeyEvent.KEYCODE_X,         "£{"); // x
-		K2N.put(KeyEvent.KEYCODE_Y,         "£®"); // y
-		K2N.put(KeyEvent.KEYCODE_Z,         "£w"); // z
+		K2N.put(KeyEvent.KEYCODE_COMMA,     "„Ñù"); // ,
+		K2N.put(KeyEvent.KEYCODE_MINUS,     "„Ñ¶"); // -
+		K2N.put(KeyEvent.KEYCODE_PERIOD,    "„Ñ°"); // .
+		K2N.put(KeyEvent.KEYCODE_SLASH,     "„Ñ•"); // /
+		K2N.put(KeyEvent.KEYCODE_0,         "„Ñ¢"); // 0
+		K2N.put(KeyEvent.KEYCODE_1,         "„ÑÖ"); // 1
+		K2N.put(KeyEvent.KEYCODE_2,         "„Ñâ"); // 2
+		K2N.put(KeyEvent.KEYCODE_3,         "Àá"); // 3
+		K2N.put(KeyEvent.KEYCODE_4,         "Àã"); // 4
+		K2N.put(KeyEvent.KEYCODE_5,         "„Ñì"); // 5
+		K2N.put(KeyEvent.KEYCODE_6,         "Àä"); // 6
+		K2N.put(KeyEvent.KEYCODE_7,         "Àô"); // 7
+		K2N.put(KeyEvent.KEYCODE_8,         "„Ñö"); // 8
+		K2N.put(KeyEvent.KEYCODE_9,         "„Ñû"); // 9
+		K2N.put(KeyEvent.KEYCODE_SEMICOLON, "„Ñ§"); // ;
+		K2N.put(KeyEvent.KEYCODE_A,         "„Ñá"); // a
+		K2N.put(KeyEvent.KEYCODE_B,         "„Ññ"); // b
+		K2N.put(KeyEvent.KEYCODE_C,         "„Ñè"); // c
+		K2N.put(KeyEvent.KEYCODE_D,         "„Ñé"); // d
+		K2N.put(KeyEvent.KEYCODE_E,         "„Ñç"); // e
+		K2N.put(KeyEvent.KEYCODE_F,         "„Ñë"); // f
+		K2N.put(KeyEvent.KEYCODE_G,         "„Ñï"); // g
+		K2N.put(KeyEvent.KEYCODE_H,         "„Ñò"); // h
+		K2N.put(KeyEvent.KEYCODE_I,         "„Ñõ"); // i
+		K2N.put(KeyEvent.KEYCODE_J,         "„Ñ®"); // j
+		K2N.put(KeyEvent.KEYCODE_K,         "„Ñú"); // k
+		K2N.put(KeyEvent.KEYCODE_L,         "„Ñ†"); // l
+		K2N.put(KeyEvent.KEYCODE_M,         "„Ñ©"); // m
+		K2N.put(KeyEvent.KEYCODE_N,         "„Ñô"); // n
+		K2N.put(KeyEvent.KEYCODE_O,         "„Ñü"); // o
+		K2N.put(KeyEvent.KEYCODE_P,         "„Ñ£"); // p
+		K2N.put(KeyEvent.KEYCODE_Q,         "„ÑÜ"); // q
+		K2N.put(KeyEvent.KEYCODE_R,         "„Ñê"); // r
+		K2N.put(KeyEvent.KEYCODE_S,         "„Ñã"); // s
+		K2N.put(KeyEvent.KEYCODE_T,         "„Ñî"); // t
+		K2N.put(KeyEvent.KEYCODE_U,         "„Ñß"); // u
+		K2N.put(KeyEvent.KEYCODE_V,         "„Ñí"); // v
+		K2N.put(KeyEvent.KEYCODE_W,         "„Ñä"); // w
+		K2N.put(KeyEvent.KEYCODE_X,         "„Ñå"); // x
+		K2N.put(KeyEvent.KEYCODE_Y,         "„Ñó"); // y
+		K2N.put(KeyEvent.KEYCODE_Z,         "„Ñà"); // z
 	}
 }

@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     
-    <string name="app_name">KerKerInput</string>
+	<string name="app_name">科科輸入法</string>
 	<string name="eng_label">[英數] Left-Alt 切換</string>
 	<string name="bpmf_label">[注音]</string>
-<string name="download_db">準備中...\n正在下載輸入法資料庫，請稍後...</string>
+	<string name="download_db">準備中...\n正在下載輸入法資料庫，請稍後...</string>
+
+	<string name="copy">複製</string>
+	<string name="msg_copy">複製完成，請在原程式貼上。</string>
+	<string name="close">關閉</string>
+	<string name="about">關於</string>
+	<string name="finish">結束輸入法</string>
+	<string name="update_str">科科輸入法有新版本了！\n現有版本：{CURRENT_VER}\n最新版本：{REMOTE_VER}\n{UPDATE_MSG}是否要升級呢？</string>
+	<string name="cancel">取消</string>
+	<string name="download">下載</string>
 </resources>
