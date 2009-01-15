@@ -11,19 +11,7 @@ public final class R {
     public static final class attr {
     }
     public static final class drawable {
-        public static final int button_12345=0x7f020000;
-        public static final int button_aieiauou=0x7f020001;
-        public static final int button_anenangenger=0x7f020002;
-        public static final int button_aoeee=0x7f020003;
-        public static final int button_bpmf=0x7f020004;
-        public static final int button_control=0x7f020005;
-        public static final int button_dtnl=0x7f020006;
-        public static final int button_gkh=0x7f020007;
-        public static final int button_iuyu=0x7f020008;
-        public static final int button_jqx=0x7f020009;
-        public static final int button_zcs=0x7f02000a;
-        public static final int button_zhchshr=0x7f02000b;
-        public static final int icon=0x7f02000c;
+        public static final int icon=0x7f020000;
     }
     public static final class id {
         public static final int AboutString=0x7f060005;

@@ -41,6 +41,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.Button;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -103,36 +104,48 @@ public class KerKerInputUI extends Activity {
 		nm.notify(INPUT_NOTIFICATION, n);
 		setKeyButtonTexts("BPMF");
 		
+		final Handler AlertDialogShowCallBack = new Handler();
+		
 		// Check the latest version
-		try {
-    		int currentVerCode = this.getPackageManager().getPackageInfo("idv.Zero.KerKerInput", 0).versionCode;
-    		String currentVersion = this.getPackageManager().getPackageInfo("idv.Zero.KerKerInput", 0).versionName;
-    		final String remoteVerInfo[] = FileDownload.getContent(updateServiceURL).split("\n");
-    		if (remoteVerInfo.length >= 4)
-    		{
-    		    int remoteVerCode = Integer.parseInt(remoteVerInfo[0]);
-    		    if (remoteVerCode > currentVerCode)
-    		    {
-    		        String update_str = this.getResources().getText(R.string.update_str).toString().replace("{CURRENT_VER}", currentVersion).replace("{REMOTE_VER}", remoteVerInfo[1]).replace("{UPDATE_MSG}", remoteVerInfo[3].replace("\\n", "\n")+"\n");
-                    new AlertDialog.Builder(c).setTitle(R.string.app_name).setMessage(update_str).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener(){
-                        public void onClick(DialogInterface dialog, int which) {
-                            KerKerInputUI.this.finish();
-                        }
-                    }).setPositiveButton(R.string.download, new DialogInterface.OnClickListener(){
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent i = new Intent(Intent.ACTION_VIEW);
-                            i.setData(Uri.parse(remoteVerInfo[2]));
-                            KerKerInputUI.this.startActivity(i);
-                            KerKerInputUI.this.finish();
-                        }
-                    }).show();		        
-    		    }
-    		}
-		}
-		catch(Exception ex)
-		{
-		    ex.printStackTrace();
-		}
+		new Thread() {
+		    public void run() {		        
+        		try {
+            		int currentVerCode = KerKerInputUI.this.getPackageManager().getPackageInfo("idv.Zero.KerKerInput", 0).versionCode;
+            		String currentVersion = KerKerInputUI.this.getPackageManager().getPackageInfo("idv.Zero.KerKerInput", 0).versionName;
+            		final String remoteVerInfo[] = FileDownload.getContent(updateServiceURL).split("\n");
+            		if (remoteVerInfo.length >= 4)
+            		{
+            		    int remoteVerCode = Integer.parseInt(remoteVerInfo[0]);
+            		    if (remoteVerCode > currentVerCode)
+            		    {
+            		        final String update_str = KerKerInputUI.this.getResources().getText(R.string.update_str).toString().replace("{CURRENT_VER}", currentVersion).replace("{REMOTE_VER}", remoteVerInfo[1]).replace("{UPDATE_MSG}", remoteVerInfo[3].replace("\\n", "\n")+"\n");
+            		        final Runnable createAlertDialog = new Runnable() {
+            		            public void run() {            		                
+                                    new AlertDialog.Builder(c).setTitle(R.string.app_name).setMessage(update_str).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener(){
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            KerKerInputUI.this.finish();
+                                        }
+                                    }).setPositiveButton(R.string.download, new DialogInterface.OnClickListener(){
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent i = new Intent(Intent.ACTION_VIEW);
+                                            i.setData(Uri.parse(remoteVerInfo[2]));
+                                            KerKerInputUI.this.startActivity(i);
+                                            KerKerInputUI.this.finish();
+                                        }
+                                    }).show();
+                                }
+                            };
+                            AlertDialogShowCallBack.post(createAlertDialog);
+            		    }
+            		}
+        		}
+        		catch(Exception ex)
+        		{
+        		    ex.printStackTrace();
+        		}
+		    }
+        }.start();
+
     }
     
     @Override
