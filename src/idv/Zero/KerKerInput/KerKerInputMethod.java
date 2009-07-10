@@ -1,4 +1,4 @@
-﻿/* ZeroBPMFInput for Android Platform Version 0.1
+/* ZeroBPMFInput for Android Platform Version 0.1
  * 
  * Copyright (c) 2008 Zero, Chien-An Cho
  * (MIT License)
@@ -39,6 +39,7 @@ import android.view.View;
 import android.text.Editable;
 import android.util.Log;
 import android.view.KeyEvent;
+import java.io.*;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -77,7 +78,7 @@ public class KerKerInputMethod extends TextKeyListener
 	
 	public KerKerInputMethod(Context c, TextView tv, ArrayList<Button> candidate_buttons)
 	{
-		super(null, false);
+		super(Capitalize.NONE, false);
 		inputCandidatesView = tv;
 		this.candidate_buttons = candidate_buttons;
 		
@@ -89,19 +90,34 @@ public class KerKerInputMethod extends TextKeyListener
 		}
 		catch(SQLiteException ex)
 		{
-			System.out.println("Error, no database file found. Downloading...");
+			System.out.println("Error, no database file found. Copying...");
 			final NotificationManager nm = (NotificationManager)c.getSystemService("notification");
 			Notification n = new Notification(R.drawable.icon, "KerKer: 正在下載資料庫...", System.currentTimeMillis());
 			PendingIntent contentIntent = PendingIntent.getActivity(c, 0, new Intent(c, KerKerInputUI.class), 0);
 			n.flags = Notification.FLAG_NO_CLEAR;
-			n.setLatestEventInfo(c, "科科輸入法", "正在下載資料庫...", contentIntent);
+			n.setLatestEventInfo(c, "科科輸入法", "第一次啟動，請稍後...", contentIntent);
 			nm.notify(DBDOWNLOAD_NOTIFICATION, n);
 
 			// Create the database (and the directories required) then close it.
 			db = c.openOrCreateDatabase("cin.db", 0, null);
 			db.close();
 			String dbpath = c.getDatabasePath("cin.db").toString();
-			FileDownload.download(DATABASE_URL, dbpath);
+
+			try {
+				OutputStream dos = new FileOutputStream(dbpath);
+				InputStream dis = c.getResources().openRawResource(R.raw.cin);
+				byte[] buffer = new byte[4096];
+				while (dis.read(buffer) > 0)
+				{
+					dos.write(buffer);
+				}
+				dos.flush();
+				dos.close();
+				dis.close();				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 			db = SQLiteDatabase.openDatabase(dbpath, null, SQLiteDatabase.OPEN_READONLY);
 			System.out.println("OK, resume initalization process...");
 			nm.cancel(DBDOWNLOAD_NOTIFICATION);

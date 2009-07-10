@@ -1,4 +1,4 @@
-﻿/* ZeroBPMFInput for Android Platform Version 0.1
+/* ZeroBPMFInput for Android Platform Version 0.1
  * 
  * Copyright (c) 2008 Zero, Chien-An Cho
  * (MIT License)
