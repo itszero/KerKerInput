@@ -1,0 +1,4 @@
+<resources>
+	<dimen name="key_height">42dip</dimen>
+	<dimen name="key_height_eng">51dip</dimen>
+</resources>

@@ -10,64 +10,155 @@ package idv.Zero.KerKerInput;
 public final class R {
     public static final class attr {
     }
+    public static final class dimen {
+        public static final int key_height=0x7f060000;
+        public static final int key_height_eng=0x7f060001;
+    }
     public static final class drawable {
-        public static final int icon=0x7f020000;
+        public static final int arrow_left=0x7f020000;
+        public static final int arrow_right=0x7f020001;
+        public static final int background=0x7f020002;
+        public static final int candidate_feedback_background=0x7f020003;
+        public static final int divider=0x7f020004;
+        public static final int globe=0x7f020005;
+        public static final int globe_feedback=0x7f020006;
+        public static final int highlight=0x7f020007;
+        public static final int ic_dialog_keyboard=0x7f020008;
+        public static final int ic_suggest_scroll_background=0x7f020009;
+        public static final int ic_suggest_strip_scroll_left_arrow=0x7f02000a;
+        public static final int ic_suggest_strip_scroll_right_arrow=0x7f02000b;
+        public static final int icon=0x7f02000c;
+        public static final int keyboard_suggest_strip=0x7f02000d;
+        public static final int keyboard_suggest_strip_divider=0x7f02000e;
+        public static final int sym_keyboard_delete=0x7f02000f;
+        public static final int sym_keyboard_done=0x7f020010;
+        public static final int sym_keyboard_feedback_delete=0x7f020011;
+        public static final int sym_keyboard_feedback_done=0x7f020012;
+        public static final int sym_keyboard_feedback_numalt=0x7f020013;
+        public static final int sym_keyboard_feedback_return=0x7f020014;
+        public static final int sym_keyboard_feedback_search=0x7f020015;
+        public static final int sym_keyboard_feedback_shift=0x7f020016;
+        public static final int sym_keyboard_feedback_shift_locked=0x7f020017;
+        public static final int sym_keyboard_feedback_space=0x7f020018;
+        public static final int sym_keyboard_num0=0x7f020019;
+        public static final int sym_keyboard_num1=0x7f02001a;
+        public static final int sym_keyboard_num2=0x7f02001b;
+        public static final int sym_keyboard_num3=0x7f02001c;
+        public static final int sym_keyboard_num4=0x7f02001d;
+        public static final int sym_keyboard_num5=0x7f02001e;
+        public static final int sym_keyboard_num6=0x7f02001f;
+        public static final int sym_keyboard_num7=0x7f020020;
+        public static final int sym_keyboard_num8=0x7f020021;
+        public static final int sym_keyboard_num9=0x7f020022;
+        public static final int sym_keyboard_numalt=0x7f020023;
+        public static final int sym_keyboard_numpound=0x7f020024;
+        public static final int sym_keyboard_numstar=0x7f020025;
+        public static final int sym_keyboard_return=0x7f020026;
+        public static final int sym_keyboard_search=0x7f020027;
+        public static final int sym_keyboard_shift=0x7f020028;
+        public static final int sym_keyboard_shift_locked=0x7f020029;
+        public static final int sym_keyboard_space=0x7f02002a;
     }
     public static final class id {
-        public static final int AboutString=0x7f060005;
-        public static final int CESwitchButton=0x7f06000a;
-        public static final int CopyButton=0x7f060009;
-        public static final int EndButton=0x7f060003;
-        public static final int TextView01=0x7f060007;
-        public static final int Title=0x7f060002;
-        public static final int TitleBar=0x7f060001;
-        public static final int buffer=0x7f06001f;
-        public static final int candidate_1=0x7f060019;
-        public static final int candidate_2=0x7f06001a;
-        public static final int candidate_3=0x7f06001b;
-        public static final int candidate_4=0x7f06001c;
-        public static final int candidate_5=0x7f06001d;
-        public static final int candidate_6=0x7f06001e;
-        public static final int candidate_layout=0x7f060018;
-        public static final int layout=0x7f060000;
-        public static final int progress=0x7f060006;
-        public static final int softkey_12345=0x7f060016;
-        public static final int softkey_aieiauou=0x7f060014;
-        public static final int softkey_anenangenger=0x7f060015;
-        public static final int softkey_aoeee=0x7f060013;
-        public static final int softkey_bpmf=0x7f06000c;
-        public static final int softkey_control=0x7f060017;
-        public static final int softkey_dtnl=0x7f06000d;
-        public static final int softkey_gkh=0x7f06000e;
-        public static final int softkey_iuyu=0x7f060012;
-        public static final int softkey_jqx=0x7f06000f;
-        public static final int softkey_zcs=0x7f060011;
-        public static final int softkey_zhchshr=0x7f060010;
-        public static final int sv=0x7f060004;
-        public static final int text=0x7f060008;
-        public static final int vkb_layout=0x7f06000b;
+        public static final int LinearLayout01=0x7f080005;
+        public static final int TextView01=0x7f080006;
+        public static final int btn_left=0x7f080001;
+        public static final int btn_right=0x7f080004;
+        public static final int candidates=0x7f080002;
+        public static final int layout_btn_left=0x7f080000;
+        public static final int layout_btn_right=0x7f080003;
+        public static final int mode_email=0x7f080008;
+        public static final int mode_im=0x7f080009;
+        public static final int mode_normal=0x7f08000a;
+        public static final int mode_url=0x7f080007;
     }
     public static final class layout {
-        public static final int about=0x7f030000;
-        public static final int download_dialog=0x7f030001;
-        public static final int main=0x7f030002;
+        public static final int candidates_bar=0x7f030000;
+        public static final int candidates_preview=0x7f030001;
+        public static final int settings=0x7f030002;
     }
     public static final class raw {
-        public static final int about=0x7f040000;
-        public static final int cin=0x7f040001;
+        public static final int bpmf=0x7f050000;
+        public static final int noseeing=0x7f050001;
     }
     public static final class string {
-        public static final int about=0x7f050007;
-        public static final int app_name=0x7f050000;
-        public static final int bpmf_label=0x7f050002;
-        public static final int cancel=0x7f05000a;
-        public static final int close=0x7f050006;
-        public static final int copy=0x7f050004;
-        public static final int download=0x7f05000b;
-        public static final int download_db=0x7f050003;
-        public static final int eng_label=0x7f050001;
-        public static final int finish=0x7f050008;
-        public static final int msg_copy=0x7f050005;
-        public static final int update_str=0x7f050009;
+        /**  Title for Latin keyboard  
+ Title for Latin keyboard settings activity / dialog 
+ Option to provide vibrate/haptic feedback on keypress 
+ Option to play back sound on keypress in soft keyboard 
+ Option to enable using nearby keys when correcting/predicting 
+ Description for hit_correction  
+ Option to enable using nearby keys when correcting/predicting in landscape
+ Description for hit_correction in landscape 
+ Option to automatically correct word on hitting space 
+ Description for auto_correction 
+ Option to enable text prediction 
+ Category title for text prediction 
+ Description for text prediction 
+ Dialog title for auto complete choices 
+ Option to enable text prediction in landscape 
+ Description for text prediction 
+ Option to enable auto capitalization of sentences 
+ Description for auto cap 
+ Option to enable auto punctuate 
+ Description for auto punctuate 
+ Option to enable quick fixes 
+ Description for quick fixes 
+ Option to enable showing suggestions 
+ Description for show suggestions 
+ Option to enable auto completion 
+ Description for auto completion 
+ Array of prediction modes 
+ Don't translate 
+ Don't translate 
+ Don't translate 
+ Indicates that a word has been added to the dictionary 
+ Accented forms of "a" 
+ Accented forms of "e" 
+ Accented forms of "i" 
+ Accented forms of "o" 
+ Accented forms of "u" 
+ Letters associated with "s" 
+ Accented forms of "n" 
+ Accented forms of "c" 
+ Accented forms of "y" 
+ Accented forms of "z" 
+ Tip to long press on keys 
+ Tip to dismiss keyboard 
+ Tip to press ?123 to access numbers and symbols 
+ Tip to long press on typed word to add to dictionary 
+ Instruction to touch the bubble to continue 
+ Instruction to touch the bubble to start typing 
+ Tutorial tip 1 - The keyboard opens any time you touch a text field 
+ Tutorial tip 2 - Touch and hold a key to view accents (examples) 
+ Tutorial tip 3 - How to switch to number/symbol keyboard 
+ Tutorial tip 4 - How to switch back to alphabet keyboard 
+ Tutorial tip 5 - How to launch keyboard settings 
+ Tutorial tip 6 - Done with the tutorial 
+ Label for soft enter key when it performs GO action.  Must be short to fit on key! 
+ Label for soft enter key when it performs NEXT action.  Must be short to fit on key! 
+ Label for soft enter key when it performs DONE action.  Must be short to fit on key! 
+ Label for soft enter key when it performs SEND action.  Must be short to fit on key! 
+ Label for "switch to symbols" key.  Must be short to fit on key! 
+ Label for "switch to numeric" key.  Must be short to fit on key! 
+ Label for "switch to alphabetic" key.  Must be short to fit on key! 
+ Label for ALT modifier key.  Must be short to fit on key! 
+         */
+        public static final int app_name=0x7f070000;
+        public static final int cancel=0x7f070003;
+        public static final int download=0x7f070004;
+        public static final int label_symbol_key=0x7f070001;
+        public static final int no_such_mapping=0x7f070005;
+        public static final int update_str=0x7f070002;
+    }
+    public static final class xml {
+        public static final int kb_noseeing=0x7f040000;
+        public static final int kb_zhuyin=0x7f040001;
+        public static final int kbd_popup_template=0x7f040002;
+        public static final int kbd_qwerty=0x7f040003;
+        public static final int method=0x7f040004;
+        public static final int popup_domains=0x7f040005;
+        public static final int popup_punctuation=0x7f040006;
+        public static final int popup_smileys=0x7f040007;
     }
 }
