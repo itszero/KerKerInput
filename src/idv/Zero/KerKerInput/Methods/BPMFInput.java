@@ -18,15 +18,12 @@ import android.util.Log;
 import android.view.KeyEvent;
 import idv.Zero.KerKerInput.KerKerInputCore;
 import idv.Zero.KerKerInput.R;
-import idv.Zero.KerKerInput.KBManager.NativeKeyboardTypes;
+import idv.Zero.KerKerInput.Methods.BPMFInputHelpers.ZhuYinComponentHelper;
 
-public class BPMFInput implements idv.Zero.KerKerInput.IKerKerInputMethod {
-	private KerKerInputCore _core;
-	private enum InputMode {MODE_ABC, MODE_SYM, MODE_SYMSHIFT, MODE_BPMF};
+public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private enum InputState {STATE_INPUT, STATE_CHOOSE};
-	private InputMode currentMode;
 	private InputState currentState;
-	private StringBuilder inputBufferRaw = new StringBuilder();
+	private String inputBufferRaw = "";
 	private List<CharSequence> _currentCandidates;
 	private HashMap<Character, String> K2N;
 	private String _dbpath;
@@ -36,7 +33,8 @@ public class BPMFInput implements idv.Zero.KerKerInput.IKerKerInputMethod {
 	private SQLiteDatabase db;
 	
 	public void initInputMethod(KerKerInputCore core) {
-		_core = core;
+		super.initInputMethod(core);
+		
 		initKeyNameData();
 		_currentPage = 0;
 		_currentCandidates = new ArrayList<CharSequence>();
@@ -48,6 +46,7 @@ public class BPMFInput implements idv.Zero.KerKerInput.IKerKerInputMethod {
 		try
 		{
 			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
+			db.setLocale(Locale.TRADITIONAL_CHINESE);
 		}
 		catch(SQLiteException ex)
 		{
@@ -71,16 +70,19 @@ public class BPMFInput implements idv.Zero.KerKerInput.IKerKerInputMethod {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}			
+			
+			// Copied, re-open it.
+			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
+			db.setLocale(Locale.TRADITIONAL_CHINESE);
 		}
 	}
 	
 	public void onEnterInputMethod()
 	{
-		currentMode = InputMode.MODE_BPMF;
 		currentState = InputState.STATE_INPUT;
 	}
 	
-	public void onExitInputMethod()
+	public void destroyInputMethod()
 	{
 		db.close();
 	}
@@ -95,29 +97,9 @@ public class BPMFInput implements idv.Zero.KerKerInput.IKerKerInputMethod {
 	}
 
 	public boolean onKeyEvent(int keyCode, int[] keyCodes) {
-		if (keyCode == -3)
-		{
-			currentMode = InputMode.MODE_ABC;
-			_core.getKeyboardManager().setNativeKeyboard(NativeKeyboardTypes.MODE_ABC);
-		}
-		else if (keyCode == -4)
-		{
-			currentMode = InputMode.MODE_BPMF;
-			_core.getKeyboardManager().setNativeKeyboard(NativeKeyboardTypes.MODE_IME);
-			currentState = InputState.STATE_INPUT;
-		}
-		else
-		{
-			return handleBPMFKeyEvent(keyCode, keyCodes);
-		}
-		return true;
+		return handleBPMFKeyEvent(keyCode, keyCodes);
 	}
 	
-	public boolean wantHandleEvent(int keyCode)
-	{
-		return (currentMode == InputMode.MODE_BPMF) || keyCode <= -3;
-	}
-
 	private boolean handleBPMFKeyEvent(int keyCode, int[] keyCodes) {
 		if (currentState == InputState.STATE_INPUT)
 		{
@@ -125,7 +107,7 @@ public class BPMFInput implements idv.Zero.KerKerInput.IKerKerInputMethod {
 			{
 				if (inputBufferRaw.length() > 0)
 				{
-					inputBufferRaw.deleteCharAt(inputBufferRaw.length() - 1);
+					inputBufferRaw = inputBufferRaw.substring(0, inputBufferRaw.length() - 1);
 				}
 				else
 					_core.getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
@@ -143,10 +125,10 @@ public class BPMFInput implements idv.Zero.KerKerInput.IKerKerInputMethod {
 			else
 			{
 				char c = (char)keyCode;
-				inputBufferRaw.append(c);
+				inputBufferRaw = ZhuYinComponentHelper.getComposedRawString(inputBufferRaw, Character.toString(c));
 				
 				// 如果是音調符號，直接進入選字模式。
-				if (c == '3' || c == '4' || c == '6' || c == '7')
+				if (inputBufferRaw.length() > 0 && (c == '3' || c == '4' || c == '6' || c == '7'))
 					currentState = InputState.STATE_CHOOSE;
 			}
 			_core.setCompositeBuffer(getCompositeString());
@@ -159,7 +141,11 @@ public class BPMFInput implements idv.Zero.KerKerInput.IKerKerInputMethod {
 			case Keyboard.KEYCODE_DELETE:
 				currentState = InputState.STATE_INPUT;
 				if (inputBufferRaw.length() > 0)
-					inputBufferRaw.deleteCharAt(inputBufferRaw.length() - 1);
+				{
+					inputBufferRaw = inputBufferRaw.substring(0, inputBufferRaw.length() - 1);
+					_core.setCompositeBuffer(getCompositeString());
+					updateCandidates();
+				}
 				else
 					Log.e("BPMFInput", "InputBuffer is requested to delete, but the buffer is empty");
 				
@@ -188,7 +174,7 @@ public class BPMFInput implements idv.Zero.KerKerInput.IKerKerInputMethod {
 				    {
 				        commitCandidate(_currentPage * CANDIDATES_PER_PAGE + keyCode - KeyEvent.KEYCODE_0 - 1);
 				        currentState = InputState.STATE_INPUT;
-				        inputBufferRaw.delete(0, inputBufferRaw.length());
+				        inputBufferRaw = "";
 				    }
 				}
 				break;
@@ -219,19 +205,16 @@ public class BPMFInput implements idv.Zero.KerKerInput.IKerKerInputMethod {
 		
 		try
 		{
-			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
-			db.setLocale(Locale.TRADITIONAL_CHINESE);
 			Cursor currentQuery = db.rawQuery("Select val from bpmf where key glob '" + inputBufferRaw.toString() + "*'", null);
 			if (currentQuery.getCount() == 0)
 			{
-				inputBufferRaw.deleteCharAt(inputBufferRaw.length() - 1);
+				inputBufferRaw = inputBufferRaw.substring(0, inputBufferRaw.length() - 1);
 				_currentCandidates.clear();
 				_core.setCompositeBuffer(getCompositeString());
 				_core.showPopup(R.string.no_such_mapping);
 				_core.hideCandidatesView();
 				currentState = InputState.STATE_INPUT;
 				updateCandidates();
-				return;
 			}
 			else
 			{
@@ -246,26 +229,21 @@ public class BPMFInput implements idv.Zero.KerKerInput.IKerKerInputMethod {
 					_currentCandidates.add(ca);
 					currentQuery.moveToNext();
 				}
-				
 				_core.showCandidatesView();
 				_core.setCandidates(_currentCandidates);
 			}
+			currentQuery.close();
 		}
 		catch(Exception e) {}
 		finally
 		{
-			db.close();
 		}
-	}
-
-	public void onTextEvent(CharSequence text) {
-		_core.getConnection().commitText(text, 1);
 	}
 
 	public void commitCandidate(int selectedCandidate) {
 		_core.getConnection().commitText(_currentCandidates.get(selectedCandidate), 1);
 		_core.hideCandidatesView();
-		inputBufferRaw.delete(0, inputBufferRaw.length());
+		inputBufferRaw = "";
 		currentState = InputState.STATE_INPUT;
 	}
 	

@@ -16,12 +16,8 @@ import android.inputmethodservice.Keyboard;
 import android.view.KeyEvent;
 import idv.Zero.KerKerInput.KerKerInputCore;
 import idv.Zero.KerKerInput.R;
-import idv.Zero.KerKerInput.KBManager.NativeKeyboardTypes;
 
-public class NoSeeing implements idv.Zero.KerKerInput.IKerKerInputMethod {
-	private KerKerInputCore _core;
-	private enum InputMode {MODE_ABC, MODE_SYM, MODE_SYMSHIFT, MODE_NOSEEING};
-	private InputMode currentMode;
+public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private StringBuilder inputBufferRaw = new StringBuilder();
 	private List<CharSequence> _currentCandidates;
 	private String _dbpath;
@@ -31,7 +27,8 @@ public class NoSeeing implements idv.Zero.KerKerInput.IKerKerInputMethod {
 	private SQLiteDatabase db;
 	
 	public void initInputMethod(KerKerInputCore core) {
-		_core = core;
+		super.initInputMethod(core);
+		
 		_currentPage = 0;
 		_currentCandidates = new ArrayList<CharSequence>();
 
@@ -74,10 +71,9 @@ public class NoSeeing implements idv.Zero.KerKerInput.IKerKerInputMethod {
 	
 	public void onEnterInputMethod()
 	{
-		currentMode = InputMode.MODE_NOSEEING;
 	}
 	
-	public void onExitInputMethod()
+	public void destroyInputMethod()
 	{
 		db.close();
 	}
@@ -92,28 +88,9 @@ public class NoSeeing implements idv.Zero.KerKerInput.IKerKerInputMethod {
 	}
 
 	public boolean onKeyEvent(int keyCode, int[] keyCodes) {
-		if (keyCode == -3)
-		{
-			currentMode = InputMode.MODE_ABC;
-			_core.getKeyboardManager().setNativeKeyboard(NativeKeyboardTypes.MODE_ABC);
-		}
-		else if (keyCode == -4)
-		{
-			currentMode = InputMode.MODE_NOSEEING;
-			_core.getKeyboardManager().setNativeKeyboard(NativeKeyboardTypes.MODE_IME);
-		}
-		else
-		{
-			return handleNoSeeingInput(keyCode, keyCodes);
-		}
-		return true;
+		return handleNoSeeingInput(keyCode, keyCodes);
 	}
 	
-	public boolean wantHandleEvent(int keyCode)
-	{
-		return (currentMode == InputMode.MODE_NOSEEING) || keyCode <= -3;
-	}
-
 	private boolean handleNoSeeingInput(int keyCode, int[] keyCodes) {
 		if (keyCode == Keyboard.KEYCODE_DELETE)
 		{
@@ -130,7 +107,7 @@ public class NoSeeing implements idv.Zero.KerKerInput.IKerKerInputMethod {
 		}
 		else if((keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9) || keyCode == 32)
 		{
-			// Noseeing users tend to use SPACE to select first candidate...
+			// Noseeing users tend to use SPACE to select first candidate
 			if (keyCode == 32)
 			{
 				if (_currentCandidates.size() > 0)
@@ -216,10 +193,6 @@ public class NoSeeing implements idv.Zero.KerKerInput.IKerKerInputMethod {
 		{
 			db.close();
 		}
-	}
-
-	public void onTextEvent(CharSequence text) {
-		_core.getConnection().commitText(text, 1);
 	}
 
 	public void commitCandidate(int selectedCandidate) {

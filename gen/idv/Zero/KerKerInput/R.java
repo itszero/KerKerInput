@@ -82,83 +82,24 @@ public final class R {
         public static final int noseeing=0x7f050001;
     }
     public static final class string {
-        /**  Title for Latin keyboard  
- Title for Latin keyboard settings activity / dialog 
- Option to provide vibrate/haptic feedback on keypress 
- Option to play back sound on keypress in soft keyboard 
- Option to enable using nearby keys when correcting/predicting 
- Description for hit_correction  
- Option to enable using nearby keys when correcting/predicting in landscape
- Description for hit_correction in landscape 
- Option to automatically correct word on hitting space 
- Description for auto_correction 
- Option to enable text prediction 
- Category title for text prediction 
- Description for text prediction 
- Dialog title for auto complete choices 
- Option to enable text prediction in landscape 
- Description for text prediction 
- Option to enable auto capitalization of sentences 
- Description for auto cap 
- Option to enable auto punctuate 
- Description for auto punctuate 
- Option to enable quick fixes 
- Description for quick fixes 
- Option to enable showing suggestions 
- Description for show suggestions 
- Option to enable auto completion 
- Description for auto completion 
- Array of prediction modes 
- Don't translate 
- Don't translate 
- Don't translate 
- Indicates that a word has been added to the dictionary 
- Accented forms of "a" 
- Accented forms of "e" 
- Accented forms of "i" 
- Accented forms of "o" 
- Accented forms of "u" 
- Letters associated with "s" 
- Accented forms of "n" 
- Accented forms of "c" 
- Accented forms of "y" 
- Accented forms of "z" 
- Tip to long press on keys 
- Tip to dismiss keyboard 
- Tip to press ?123 to access numbers and symbols 
- Tip to long press on typed word to add to dictionary 
- Instruction to touch the bubble to continue 
- Instruction to touch the bubble to start typing 
- Tutorial tip 1 - The keyboard opens any time you touch a text field 
- Tutorial tip 2 - Touch and hold a key to view accents (examples) 
- Tutorial tip 3 - How to switch to number/symbol keyboard 
- Tutorial tip 4 - How to switch back to alphabet keyboard 
- Tutorial tip 5 - How to launch keyboard settings 
- Tutorial tip 6 - Done with the tutorial 
- Label for soft enter key when it performs GO action.  Must be short to fit on key! 
- Label for soft enter key when it performs NEXT action.  Must be short to fit on key! 
- Label for soft enter key when it performs DONE action.  Must be short to fit on key! 
- Label for soft enter key when it performs SEND action.  Must be short to fit on key! 
- Label for "switch to symbols" key.  Must be short to fit on key! 
- Label for "switch to numeric" key.  Must be short to fit on key! 
- Label for "switch to alphabetic" key.  Must be short to fit on key! 
- Label for ALT modifier key.  Must be short to fit on key! 
-         */
         public static final int app_name=0x7f070000;
-        public static final int cancel=0x7f070003;
-        public static final int download=0x7f070004;
-        public static final int label_symbol_key=0x7f070001;
-        public static final int no_such_mapping=0x7f070005;
-        public static final int update_str=0x7f070002;
+        public static final int cancel=0x7f070002;
+        public static final int download=0x7f070003;
+        public static final int label_abc_key=0x7f070005;
+        public static final int label_symbol_key=0x7f070004;
+        public static final int no_such_mapping=0x7f070006;
+        public static final int update_str=0x7f070001;
     }
     public static final class xml {
         public static final int kb_noseeing=0x7f040000;
         public static final int kb_zhuyin=0x7f040001;
         public static final int kbd_popup_template=0x7f040002;
         public static final int kbd_qwerty=0x7f040003;
-        public static final int method=0x7f040004;
-        public static final int popup_domains=0x7f040005;
-        public static final int popup_punctuation=0x7f040006;
-        public static final int popup_smileys=0x7f040007;
+        public static final int kbd_sym=0x7f040004;
+        public static final int kbd_sym_alt=0x7f040005;
+        public static final int method=0x7f040006;
+        public static final int popup_domains=0x7f040007;
+        public static final int popup_punctuation=0x7f040008;
+        public static final int popup_smileys=0x7f040009;
     }
 }

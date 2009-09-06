@@ -4,6 +4,13 @@ import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 
 public class KBManager {
+	public static final int KEYCODE_SYM = -100;
+	public static final int KEYCODE_SYM_ALT = -101;
+	public static final int KEYCODE_ABC = -102;
+	public static final int KEYCODE_IME = -103;
+	public static final int KEYCODE_NEXT_IME = -104;
+	public static final int KEYCODE_DO_OUTPUT_CHARS = -105;
+	
 	private KerKerInputCore _core = null;
 	private KeyboardView _currentKBView = null;
 	private Keyboard _currentKB = null;
@@ -43,10 +50,10 @@ public class KBManager {
 			setCurrentKeyboardFromResource(R.xml.kbd_qwerty, R.id.mode_normal);
 			break;
 		case MODE_SYM:
-			setCurrentKeyboardFromResource(R.xml.kbd_qwerty, R.id.mode_normal);
+			setCurrentKeyboardFromResource(R.xml.kbd_sym, R.id.mode_normal);
 			break;
 		case MODE_SYM_ALT:
-			setCurrentKeyboardFromResource(R.xml.kbd_qwerty, R.id.mode_normal);
+			setCurrentKeyboardFromResource(R.xml.kbd_sym_alt, R.id.mode_normal);
 			break;
 		case MODE_IME:
 			setCurrentKeyboard(_core.getCurrentInputMethod().getDesiredKeyboard());

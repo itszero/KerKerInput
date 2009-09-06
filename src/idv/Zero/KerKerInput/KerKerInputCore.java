@@ -1,9 +1,10 @@
 package idv.Zero.KerKerInput;
 
+import idv.Zero.KerKerInput.KBManager.NativeKeyboardTypes;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -21,10 +22,13 @@ import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
 import android.os.Handler;
 
 public class KerKerInputCore implements OnKeyboardActionListener {
+	public enum InputMode { MODE_ABC, MODE_SYM, MODE_SYM_ALT, MODE_IME };
+	
 	private KerKerInputService _frontEnd = null;
 	private KBManager _kbm = null;
 	private ArrayList<IKerKerInputMethod> _methods;
 	private IKerKerInputMethod _currentMethod;
+	private InputMode _currentMode;
 	private CandidatesViewContainer _candidatesContainer;
 	private Handler _handler;
 	private PopupWindow _winMsg;
@@ -36,7 +40,8 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		_frontEnd = fe;
 		_kbm = new KBManager(this);
 		_methods = new ArrayList<IKerKerInputMethod>();
-		_currentMethod = null;		
+		_currentMethod = null;
+		_currentMode = InputMode.MODE_IME;
 		_handler = new Handler();
 		
 		_pntText = new Paint();
@@ -55,6 +60,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		_winMsg.setContentView(_txtvMsg);
 		
 		registerAvailableInputMethods();
+
 		requestNextInputMethod();
 	}
 	
@@ -103,7 +109,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		else
 		{
 			int curIndex = _methods.indexOf(_currentMethod);
-			_currentMethod.onExitInputMethod();
+			_currentMethod.destroyInputMethod();
 			if (_methods.size() > curIndex + 1)
 				_currentMethod = _methods.get(curIndex + 1);
 			else
@@ -113,17 +119,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		_currentMethod.initInputMethod(this);
 		_currentMethod.onEnterInputMethod();
 		_kbm.setCurrentKeyboard(_currentMethod.getDesiredKeyboard());
-		_handler.postDelayed(new Runnable(){
-			public void run() {
-				try{
-					showPopup(_currentMethod.getName());
-				}
-				catch(Exception e)
-				{
-					e.printStackTrace();
-				}
-			}
-		}, 700);
+		showIMENamePopup(_currentMethod.getName());
 	}
 	
 	public IKerKerInputMethod getCurrentInputMethod()
@@ -157,13 +153,18 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 
 	// Virtual Keyboard input
 	public void onKey(int primaryCode, int[] keyCodes) {
-		if (primaryCode == -999)
+		if (primaryCode == KBManager.KEYCODE_NEXT_IME)
+		{
+			_currentMode = InputMode.MODE_IME;
 			requestNextInputMethod();
-		else if (!_currentMethod.wantHandleEvent(primaryCode))
+		}
+		else if (primaryCode == KBManager.KEYCODE_DO_OUTPUT_CHARS)
+			return; // Let IME onText listener handle it.
+		else if (_currentMode != InputMode.MODE_IME || !_currentMethod.wantHandleEvent(primaryCode))
 		{
 			// If the IME does not want the event, we assume it's an plain-English keyboard.
 			switch(primaryCode) {
-			case -1: // Shift Key
+			case Keyboard.KEYCODE_SHIFT: // Shift Key
 				Boolean isShifted = !_kbm.getCurrentKeyboard().isShifted();
 				_kbm.getCurrentKeyboard().setShifted(isShifted);
 				KeyboardView kv = _kbm.getCurrentKeyboardView();
@@ -172,11 +173,30 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 				// Dirty Hack :( Force KeyboardView wipe out its buffer...
 				kv.onSizeChanged(kv.getWidth(), kv.getHeight(), 0, 0);
 				break;
-			case -2: // 123 Keyboard
-				
+			case KBManager.KEYCODE_SYM: // 123 Keyboard
+				_currentMode = InputMode.MODE_SYM;
+				_kbm.setNativeKeyboard(NativeKeyboardTypes.MODE_SYM);
+				showIMENamePopup("123");
+				break;
+			case KBManager.KEYCODE_SYM_ALT: // 123 Keyboard
+				_currentMode = InputMode.MODE_SYM_ALT;
+				_kbm.setNativeKeyboard(NativeKeyboardTypes.MODE_SYM_ALT);
+				showIMENamePopup("#+=");
+				break;
+			case KBManager.KEYCODE_ABC: // ABC Keyboard
+				_currentMode = InputMode.MODE_ABC;
+				_kbm.setNativeKeyboard(NativeKeyboardTypes.MODE_ABC);
+				showIMENamePopup("ABC");
+				break;
+			case KBManager.KEYCODE_IME: // IME Keyboard
+				_currentMode = InputMode.MODE_IME;
+				_kbm.setNativeKeyboard(NativeKeyboardTypes.MODE_IME);
+				_currentMethod.onEnterInputMethod();
+				showIMENamePopup(_currentMethod.getName());
 				break;
 			case Keyboard.KEYCODE_DELETE:
 				getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
+				break;
 			default:
 				if (getKeyboardManager().getCurrentKeyboard().isShifted())
 					getFrontend().sendKeyChar(Character.toUpperCase((char) primaryCode));
@@ -189,37 +209,17 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 			_currentMethod.onKeyEvent(primaryCode, keyCodes);
 	}
 
-	public void onPress(int primaryCode) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onRelease(int primaryCode) {
-	}
-
 	public void onText(CharSequence text) {
 		_currentMethod.onTextEvent(text);
 	}
 
-	public void swipeDown() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void swipeLeft() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void swipeRight() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void swipeUp() {
-		// TODO Auto-generated method stub
-		
-	}
+	// Currently we have nothing to do here...
+	public void onPress(int primaryCode) {}
+	public void onRelease(int primaryCode) {}
+	public void swipeDown() {}
+	public void swipeLeft() {}
+	public void swipeRight() {}
+	public void swipeUp() {}
 
 	public void commitCandidate(int selectedCandidate) {
 		_currentMethod.commitCandidate(selectedCandidate);
@@ -227,6 +227,10 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 
 	public void setCandidates(List<CharSequence> candidates) {
 		_candidatesContainer.setCandidates(candidates);
+	}
+
+	public void clearCandidates() {
+		_candidatesContainer.setCandidates(new ArrayList<CharSequence>());
 	}
 
 	public void showCandidatesView() {
@@ -241,6 +245,20 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		getConnection().setComposingText(buf, 1);
 	}
 	
+	public void showIMENamePopup(final String imeName) {
+		_handler.postDelayed(new Runnable(){
+			public void run() {
+				try{
+					showPopup(imeName);
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}, 400);
+	}
+
 	public void showPopup(int resid)
 	{
 		showPopup(getFrontend().getResources().getString(resid));
@@ -248,7 +266,6 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	
 	public void showPopup(CharSequence msg)
     {
-		Log.i("POPUP", "Going to popup: " + msg);
     	_txtvMsg.setText(msg);
     	_txtvMsg.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
     	int wordWidth = (int)(_pntText.measureText(msg.toString()));
@@ -275,7 +292,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 			public void run() {
 				hidePopup();
 			}
-    	}, 1000);
+    	}, 700);
     }
     
     private void hidePopup()

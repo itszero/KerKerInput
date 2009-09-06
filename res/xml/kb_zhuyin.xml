@@ -56,9 +56,8 @@
 	</Row>
 
 	<Row>
-		<Key android:codes="-2" android:keyLabel="@string/label_symbol_key" android:popupKeyboard="@xml/kbd_popup_template" android:popupCharacters=""
-			android:keyWidth="15%p" android:keyEdgeFlags="left"/>
-		<Key android:codes="-3" android:keyLabel="ABC" android:popupKeyboard="@xml/kbd_popup_template" android:popupCharacters="" android:keyWidth="15%p" />
+		<Key android:codes="-100" android:keyLabel="@string/label_symbol_key" android:keyWidth="15%p" android:keyEdgeFlags="left"/>
+		<Key android:codes="-102" android:keyLabel="@string/label_abc_key" android:keyWidth="15%p"/>
 		<Key android:codes="32" android:keyIcon="@drawable/sym_keyboard_space" android:iconPreview="@drawable/sym_keyboard_feedback_space" android:keyWidth="30%p"
 			android:isRepeatable="true" />
 		<Key android:codes="10" android:keyIcon="@drawable/sym_keyboard_return" android:iconPreview="@drawable/sym_keyboard_feedback_return" android:keyWidth="20%p"/>
