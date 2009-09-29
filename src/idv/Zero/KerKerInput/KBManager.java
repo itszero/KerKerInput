@@ -10,6 +10,10 @@ public class KBManager {
 	public static final int KEYCODE_IME = -103;
 	public static final int KEYCODE_NEXT_IME = -104;
 	public static final int KEYCODE_DO_OUTPUT_CHARS = -105;
+	public static final int KEYCODE_DPAD_UP = -106;
+	public static final int KEYCODE_DPAD_DOWN = -107;
+	public static final int KEYCODE_DPAD_LEFT = -108;
+	public static final int KEYCODE_DPAD_RIGHT = -109;
 	
 	private KerKerInputCore _core = null;
 	private KeyboardView _currentKBView = null;

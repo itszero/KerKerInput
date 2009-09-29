@@ -138,12 +138,34 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		// Allow user to user BACK key to hide SIP
 		if (e.getKeyCode() == KeyEvent.KEYCODE_BACK)
 			return false;
-		else if (e.getKeyCode() == KeyEvent.KEYCODE_MENU)
-			return false;
-		else if (e.getKeyCode() == KeyEvent.KEYCODE_ALT_LEFT)
-			requestNextInputMethod();
 		
-		return _currentMethod.onKeyEvent(keyCode, new int[]{keyCode});
+		if (_currentMethod.wantHandleEvent(e.getKeyCode()))
+			_currentMethod.onKeyEvent(keyCode, new int[]{keyCode});
+		else
+		{
+			switch(e.getKeyCode())
+			{
+			case KeyEvent.KEYCODE_MENU:
+				return false;
+			case KeyEvent.KEYCODE_ALT_LEFT:
+				requestNextInputMethod();
+				break;
+			case KBManager.KEYCODE_DPAD_UP:
+				getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DPAD_UP);
+				break;
+			case KBManager.KEYCODE_DPAD_DOWN:
+				getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DPAD_DOWN);
+				break;
+			case KBManager.KEYCODE_DPAD_LEFT:
+				getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DPAD_LEFT);
+				break;
+			case KBManager.KEYCODE_DPAD_RIGHT:
+				getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DPAD_RIGHT);
+				break;
+			}
+		}
+		
+		return false;
 	}
 	
 	public boolean onKeyMultiple(int keyCode, int count, KeyEvent e)
@@ -177,16 +199,19 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 				_currentMode = InputMode.MODE_SYM;
 				_kbm.setNativeKeyboard(NativeKeyboardTypes.MODE_SYM);
 				showIMENamePopup("123");
+				hideCandidatesView();
 				break;
 			case KBManager.KEYCODE_SYM_ALT: // 123 Keyboard
 				_currentMode = InputMode.MODE_SYM_ALT;
 				_kbm.setNativeKeyboard(NativeKeyboardTypes.MODE_SYM_ALT);
 				showIMENamePopup("#+=");
+				hideCandidatesView();
 				break;
 			case KBManager.KEYCODE_ABC: // ABC Keyboard
 				_currentMode = InputMode.MODE_ABC;
 				_kbm.setNativeKeyboard(NativeKeyboardTypes.MODE_ABC);
 				showIMENamePopup("ABC");
+				hideCandidatesView();
 				break;
 			case KBManager.KEYCODE_IME: // IME Keyboard
 				_currentMode = InputMode.MODE_IME;
@@ -238,7 +263,9 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	}
 	
 	public void hideCandidatesView() {
-		_frontEnd.setCandidatesViewShown(false);
+		//_frontEnd.setCandidatesViewShown(false);
+		if (_candidatesContainer != null)
+			clearCandidates();
 	}
 	
 	public void setCompositeBuffer(CharSequence buf) {

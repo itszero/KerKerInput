@@ -80,6 +80,8 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	public void onEnterInputMethod()
 	{
 		currentState = InputState.STATE_INPUT;
+		inputBufferRaw = "";
+		updateCandidates();
 	}
 	
 	public void destroyInputMethod()
@@ -112,15 +114,22 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				else
 					_core.getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
 			}
-			else if(keyCode == 32) { // space
+			else if (keyCode == 32) // space
+			{
 				if (_currentCandidates.size() > 0)
+				{
 					currentState = InputState.STATE_CHOOSE;
+					handleBPMFKeyEvent(32, null);
+				}
 				else
 					_core.getFrontend().sendKeyChar((char) keyCode);
 			}
-			else if(keyCode >= -104 && keyCode <= -100)
+			else if (keyCode == 10) // RETURN
 			{
-				return false;
+				if (inputBufferRaw.length() > 0)
+					commitText(getCompositeString());
+				else
+					_core.getFrontend().sendKeyChar((char) keyCode);
 			}
 			else
 			{
@@ -150,19 +159,22 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 					Log.e("BPMFInput", "InputBuffer is requested to delete, but the buffer is empty");
 				
 				break;
+			// TODO: Make sure DPad & Keyboard L/R keyCode
 			case -103: // DPad Left
 				if (_currentPage > 0)
 					_currentPage--;
 				else
 					_currentPage = _totalPages - 1;
 				break;
-			case ' ':
 			case -104: // DPad Right
 				if (_currentPage < _totalPages - 1)
 					_currentPage++;
 				else
 					_currentPage = 0;
 				break;
+			case ' ':
+			case 10:
+				keyCode = KeyEvent.KEYCODE_0;
 			default:
 				if (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9)
 				{
@@ -173,8 +185,6 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				    if ((_currentPage * CANDIDATES_PER_PAGE + keyCode - KeyEvent.KEYCODE_0 - 1) < _currentCandidates.size())
 				    {
 				        commitCandidate(_currentPage * CANDIDATES_PER_PAGE + keyCode - KeyEvent.KEYCODE_0 - 1);
-				        currentState = InputState.STATE_INPUT;
-				        inputBufferRaw = "";
 				    }
 				}
 				break;
@@ -205,7 +215,8 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		
 		try
 		{
-			Cursor currentQuery = db.rawQuery("Select val from bpmf where key glob '" + inputBufferRaw.toString() + "*'", null);
+			// Cursor currentQuery = db.rawQuery("Select val from bpmf where key glob '" + inputBufferRaw.toString() + "*'", null);
+			Cursor currentQuery = db.rawQuery("Select val from bpmf where key >= '" + inputBufferRaw.toString() + "' AND key < '" + inputBufferRaw.toString() + "zzz'", null);
 			if (currentQuery.getCount() == 0)
 			{
 				inputBufferRaw = inputBufferRaw.substring(0, inputBufferRaw.length() - 1);
@@ -240,13 +251,11 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		}
 	}
 
-	public void commitCandidate(int selectedCandidate) {
-		_core.getConnection().commitText(_currentCandidates.get(selectedCandidate), 1);
-		_core.hideCandidatesView();
-		inputBufferRaw = "";
-		currentState = InputState.STATE_INPUT;
+	public void commitCandidate(int selectedCandidate)
+	{
+		commitText(_currentCandidates.get(selectedCandidate));
 	}
-	
+		
 	public void setTotalPages(int totalPages)
 	{
 		_totalPages = totalPages;
@@ -255,6 +264,15 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	public void setCurrentPage(int currentPage)
 	{
 		_currentPage = currentPage;
+	}
+	
+	private void commitText(CharSequence str)
+	{
+		_core.getConnection().commitText(str, 1);
+		_core.hideCandidatesView();
+		inputBufferRaw = "";
+		updateCandidates();
+		currentState = InputState.STATE_INPUT;
 	}
 	
 	private void initKeyNameData()

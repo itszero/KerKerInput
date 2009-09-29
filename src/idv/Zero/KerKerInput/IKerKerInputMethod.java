@@ -18,7 +18,7 @@ public abstract class IKerKerInputMethod {
 
 	/* Keyboard Events */
 	public Keyboard getDesiredKeyboard() { return null; }
-	public boolean wantHandleEvent(int keyCode) { return (keyCode > -2); }
+	public boolean wantHandleEvent(int keyCode) { return (keyCode > -2) || (keyCode == Keyboard.KEYCODE_DELETE) ; }
 	abstract public boolean onKeyEvent(int keyCode, int[] keyCodes);
 	abstract public void commitCandidate(int currentCandidate);
 	public void onTextEvent(CharSequence text) { if (_core != null) _core.getConnection().commitText(text, 1); }

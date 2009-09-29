@@ -62,13 +62,13 @@ public class KerKerInputService extends InputMethodService {
 		if (e.getKeyCode() == KeyEvent.KEYCODE_DEL)
 			return -5;
 		else if (e.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP)
-			return -100;
+			return KBManager.KEYCODE_DPAD_UP;
 		else if (e.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN)
-			return -101;
+			return KBManager.KEYCODE_DPAD_DOWN;
 		else if (e.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT)
-			return -102;
+			return KBManager.KEYCODE_DPAD_LEFT;
 		else if (e.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT)
-			return -103;
+			return KBManager.KEYCODE_DPAD_RIGHT;
 		
 		return e.getUnicodeChar();
 	}

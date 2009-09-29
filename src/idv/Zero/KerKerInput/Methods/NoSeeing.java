@@ -42,6 +42,7 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		}
 		catch(SQLiteException ex)
 		{
+			db = null;
 			System.out.println("Error, no database file found. Copying...");
 
 			new Thread(new Runnable() {
@@ -64,18 +65,24 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-				}
+
+					db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
+					db.setLocale(Locale.TRADITIONAL_CHINESE);
+			}
 			}).start();
 		}
 	}
 	
 	public void onEnterInputMethod()
 	{
+		inputBufferRaw.delete(0, inputBufferRaw.length());
+		updateCandidates();
 	}
 	
 	public void destroyInputMethod()
 	{
-		db.close();
+		if (db != null)
+			db.close();
 	}
 	
 	public String getName()
@@ -101,11 +108,14 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			else
 				_core.getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
 		}
-		else if(keyCode >= -104 && keyCode <= -100)
+		else if (keyCode == 10)
 		{
-			return false;
+			if (inputBufferRaw.length() > 0)
+				commitText(getCompositeString());
+			else
+				_core.getFrontend().sendKeyChar((char) keyCode);
 		}
-		else if((keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9) || keyCode == 32)
+		else if(((keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9) || (keyCode == 32)) && inputBufferRaw.length() > 0)
 		{
 			// Noseeing users tend to use SPACE to select first candidate
 			if (keyCode == 32)
@@ -155,11 +165,13 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			return;
 		}
 		
+		if (db == null)
+			return;
+		
 		try
 		{
-			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
-			db.setLocale(Locale.TRADITIONAL_CHINESE);
-			Cursor currentQuery = db.rawQuery("Select val from noseeing where key glob '" + inputBufferRaw.toString() + "*'", null);
+			//Cursor currentQuery = db.rawQuery("Select val from noseeing where key glob '" + inputBufferRaw.toString() + "*'", null);
+			Cursor currentQuery = db.rawQuery("Select val from noseeing where key >= '" + inputBufferRaw.toString() + "' AND key < '" + inputBufferRaw.toString() + "zzz'", null);
 			if (currentQuery.getCount() == 0)
 			{
 				inputBufferRaw.deleteCharAt(inputBufferRaw.length() - 1);
@@ -184,19 +196,24 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 					currentQuery.moveToNext();
 				}
 				
-				_core.showCandidatesView();
 				_core.setCandidates(_currentCandidates);
+				_core.showCandidatesView();
 			}
 		}
 		catch(Exception e) {}
 		finally
 		{
-			db.close();
 		}
 	}
 
-	public void commitCandidate(int selectedCandidate) {
-		_core.getConnection().commitText(_currentCandidates.get(selectedCandidate), 1);
+	public void commitCandidate(int selectedCandidate)
+	{
+		commitText(_currentCandidates.get(selectedCandidate));
+	}
+	
+	private void commitText(CharSequence str)
+	{
+		_core.getConnection().commitText(str, 1);
 		_core.hideCandidatesView();
 		inputBufferRaw.delete(0, inputBufferRaw.length());
 	}
