@@ -13,10 +13,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.inputmethodservice.Keyboard;
 import android.util.Log;
 import android.view.KeyEvent;
 import idv.Zero.KerKerInput.KerKerInputCore;
+import idv.Zero.KerKerInput.Keyboard;
 import idv.Zero.KerKerInput.R;
 import idv.Zero.KerKerInput.Methods.BPMFInputHelpers.ZhuYinComponentHelper;
 
@@ -96,6 +96,10 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 
 	public Keyboard getDesiredKeyboard() {
 		return new Keyboard(_core.getFrontend(), R.xml.kb_zhuyin, R.id.mode_normal);
+	}
+
+	public void commitCurrentComposingBuffer() {
+		commitText(getCompositeString());
 	}
 
 	public boolean onKeyEvent(int keyCode, int[] keyCodes) {
@@ -268,8 +272,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	
 	private void commitText(CharSequence str)
 	{
-		_core.getConnection().commitText(str, 1);
-		_core.hideCandidatesView();
+		_core.commitText(str);
 		inputBufferRaw = "";
 		updateCandidates();
 		currentState = InputState.STATE_INPUT;
@@ -320,5 +323,4 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		K2N.put('y', "ㄗ");
 		K2N.put('z', "ㄈ");
 	}
-
 }

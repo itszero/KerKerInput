@@ -3,10 +3,11 @@ package idv.Zero.KerKerInput;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.inputmethodservice.*;
+import android.inputmethodservice.InputMethodService;
 import android.net.Uri;
 import android.os.Handler;
 import android.view.*;
+import android.view.inputmethod.EditorInfo;
 
 public class KerKerInputService extends InputMethodService {
 	private String updateServiceURL = "http://zero.itszero.info/KerKerInput/version.dat";
@@ -31,6 +32,11 @@ public class KerKerInputService extends InputMethodService {
 	public View onCreateInputView()
 	{
 		return _core.requestInputView();
+	}
+	
+	public void onStartInputView(EditorInfo info, boolean restarting)
+	{
+		_core.getKeyboardManager().setImeOptions(info.inputType);
 	}
 	
 	@Override

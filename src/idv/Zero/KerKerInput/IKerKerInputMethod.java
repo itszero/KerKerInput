@@ -1,7 +1,5 @@
 package idv.Zero.KerKerInput;
 
-import android.inputmethodservice.Keyboard;
-
 public abstract class IKerKerInputMethod {
 	protected KerKerInputCore _core;
 	
@@ -15,6 +13,7 @@ public abstract class IKerKerInputMethod {
 	}
 	abstract public void destroyInputMethod();
 	abstract public String getName();
+	abstract public void commitCurrentComposingBuffer();
 
 	/* Keyboard Events */
 	public Keyboard getDesiredKeyboard() { return null; }

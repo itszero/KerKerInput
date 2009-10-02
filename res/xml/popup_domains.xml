@@ -29,6 +29,6 @@
         <Key android:keyLabel=".net" android:keyOutputText=".net" android:keyEdgeFlags="left" />
         <Key android:keyLabel=".org" android:keyOutputText=".org"/>
         <Key android:keyLabel=".gov" android:keyOutputText=".gov"/>
-        <Key android:keyLabel=".tv" android:keyOutputText=".tv" android:keyEdgeFlags="right" />
+        <Key android:keyLabel=".tw" android:keyOutputText=".tw" android:keyEdgeFlags="right" />
     </Row>
 </Keyboard>

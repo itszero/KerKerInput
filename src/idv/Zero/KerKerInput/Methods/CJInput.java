@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -17,13 +18,13 @@ import idv.Zero.KerKerInput.KerKerInputCore;
 import idv.Zero.KerKerInput.Keyboard;
 import idv.Zero.KerKerInput.R;
 
-public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
+public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private StringBuilder inputBufferRaw = new StringBuilder();
 	private List<CharSequence> _currentCandidates;
 	private String _dbpath;
 	private int _currentPage;
 	private int _totalPages;
-	
+	private HashMap<CharSequence, CharSequence> keyNames;
 	private SQLiteDatabase db;
 	
 	public void initInputMethod(KerKerInputCore core) {
@@ -34,11 +35,13 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 
 		final Context c = core.getFrontend();
 		
-		_dbpath = c.getDatabasePath("noseeing.db").toString();
+		_dbpath = c.getDatabasePath("cj5.db").toString();
+		keyNames = new HashMap<CharSequence, CharSequence>();
 
 		try
 		{
 			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
+			loadKeyNames();
 		}
 		catch(SQLiteException ex)
 		{
@@ -48,12 +51,12 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			new Thread(new Runnable() {
 				public void run() {
 					// Create the database (and the directories required) then close it.
-					db = c.openOrCreateDatabase("noseeing.db", 0, null);
+					db = c.openOrCreateDatabase("cj5.db", 0, null);
 					db.close();
 
 					try {
 						OutputStream dos = new FileOutputStream(_dbpath);
-						InputStream dis = c.getResources().openRawResource(R.raw.noseeing);
+						InputStream dis = c.getResources().openRawResource(R.raw.cj5);
 						byte[] buffer = new byte[32768];
 						while (dis.read(buffer) > 0)
 						{
@@ -68,6 +71,7 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 
 					db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 					db.setLocale(Locale.TRADITIONAL_CHINESE);
+					loadKeyNames();
 			}
 			}).start();
 		}
@@ -87,22 +91,22 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	
 	public String getName()
 	{
-		return "嘸蝦米";
+		return "倉頡五代";
 	}
 
 	public Keyboard getDesiredKeyboard() {
-		return new Keyboard(_core.getFrontend(), R.xml.kb_noseeing, R.id.mode_normal);
+		return new Keyboard(_core.getFrontend(), R.xml.kb_cj, R.id.mode_normal);
 	}
-	
+
 	public void commitCurrentComposingBuffer() {
 		commitText(getCompositeString());
 	}
 
 	public boolean onKeyEvent(int keyCode, int[] keyCodes) {
-		return handleNoSeeingInput(keyCode, keyCodes);
+		return handleCJInput(keyCode, keyCodes);
 	}
 	
-	private boolean handleNoSeeingInput(int keyCode, int[] keyCodes) {
+	private boolean handleCJInput(int keyCode, int[] keyCodes) {
 		if (keyCode == Keyboard.KEYCODE_DELETE)
 		{
 			if (inputBufferRaw.length() > 0)
@@ -121,7 +125,6 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		}
 		else if(((keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9) || (keyCode == 32)) && inputBufferRaw.length() > 0)
 		{
-			// Noseeing users tend to use SPACE to select first candidate
 			if (keyCode == 32)
 			{
 				if (_currentCandidates.size() > 0)
@@ -156,9 +159,8 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		StringBuilder str = new StringBuilder();
 		int length = inputBufferRaw.length();
 		for(int i=0;i<length;i++)
-		{
-			str.append(Character.toUpperCase(inputBufferRaw.charAt(i)));
-		}
+			str.append(keyNames.get(Character.toString(inputBufferRaw.charAt(i))));
+		
 		return str.toString();
 	}
 
@@ -174,8 +176,7 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		
 		try
 		{
-			//Cursor currentQuery = db.rawQuery("Select val from noseeing where key glob '" + inputBufferRaw.toString() + "*'", null);
-			Cursor currentQuery = db.rawQuery("Select val from noseeing where key >= '" + inputBufferRaw.toString() + "' AND key < '" + inputBufferRaw.toString() + "zzz'", null);
+			Cursor currentQuery = db.rawQuery("Select val from changjei5 where key >= '" + inputBufferRaw.toString() + "' AND key < '" + inputBufferRaw.toString() + "zzz'", null);
 			if (currentQuery.getCount() == 0)
 			{
 				inputBufferRaw.deleteCharAt(inputBufferRaw.length() - 1);
@@ -230,5 +231,33 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	public void setCurrentPage(int currentPage)
 	{
 		_currentPage = currentPage;
+	}
+	
+	private void loadKeyNames()
+	{
+		if (db == null)
+			return;
+		
+		Cursor currentQuery = db.rawQuery("Select * from keyname", null);
+		if (currentQuery.getCount() == 0)
+			return;
+		else
+		{
+			int count = currentQuery.getCount();
+			int colKey = currentQuery.getColumnIndex("key");
+			int colVal = currentQuery.getColumnIndex("val");
+			
+			currentQuery.moveToNext();
+			for(int i=0;i<count;i++)
+			{
+				keyNames.put(currentQuery.getString(colKey), currentQuery.getString(colVal));
+				currentQuery.moveToNext();
+			}
+		}
+		currentQuery.close();
+		
+		// Make sure if user pressed any keys during database init gets reflected.
+		_core.setCompositeBuffer(getCompositeString());
+		updateCandidates();
 	}
 }
