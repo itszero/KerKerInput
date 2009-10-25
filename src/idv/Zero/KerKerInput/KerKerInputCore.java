@@ -3,8 +3,10 @@ package idv.Zero.KerKerInput;
 import idv.Zero.KerKerInput.KBManager.NativeKeyboardTypes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -14,12 +16,15 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.InputConnection;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.inputmethodservice.Keyboard;
-import android.inputmethodservice.KeyboardView;
 import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Handler;
+import android.os.Vibrator;
 
 public class KerKerInputCore implements OnKeyboardActionListener {
 	public enum InputMode { MODE_ABC, MODE_SYM, MODE_SYM_ALT, MODE_IME };
@@ -34,6 +39,10 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	private PopupWindow _winMsg;
 	private TextView _txtvMsg;
 	private Paint _pntText;
+	private Boolean shouldVibrate, shouldMakeNoise;
+	private SoundPool sndPool = null;
+	private HashMap<Integer, Integer> sndPoolMap = null;
+	private boolean _candidatesShown;
 	
 	public KerKerInputCore(KerKerInputService fe)
 	{
@@ -43,27 +52,28 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		_currentMethod = null;
 		_currentMode = InputMode.MODE_ABC;
 		_handler = new Handler();
+		_candidatesShown = false;
 		
 		_pntText = new Paint();
 		_pntText.setColor(Color.WHITE);
 		_pntText.setAntiAlias(true);
 		_pntText.setTextSize(24);
 		_pntText.setStrokeWidth(0);
+		
+		setShouldVibrate(false);
+		setShouldMakeNoise(true);
 	}
 	
 	public void initCore()
 	{
-		_winMsg = new PopupWindow(_frontEnd);
-		_winMsg.setWindowLayoutMode(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-		_winMsg.setBackgroundDrawable(null);
-		_txtvMsg = (TextView) getInflater().inflate(R.layout.candidates_preview, null);
-		_winMsg.setContentView(_txtvMsg);
-		
+		Log.i("KerKerInputCore", "Initializing...");
+		_winMsg = null;
 		registerAvailableInputMethods();
 	}
 	
 	public void registerAvailableInputMethods() {
 		IKerKerInputMethod m;
+		
 		m = new idv.Zero.KerKerInput.Methods.BPMFInput();
 		_methods.add(m);
 		m = new idv.Zero.KerKerInput.Methods.NoSeeing();
@@ -104,18 +114,24 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	{
 		if (_currentMethod == null)
 		{
-			_currentMethod = _methods.get(0);
+			setCurrentInputMethod(_methods.get(0));
 		}
 		else
 		{
 			int curIndex = _methods.indexOf(_currentMethod);
-			_currentMethod.destroyInputMethod();
 			if (_methods.size() > curIndex + 1)
-				_currentMethod = _methods.get(curIndex + 1);
+				setCurrentInputMethod(_methods.get(curIndex + 1));
 			else
-				_currentMethod = _methods.get(0);
+				setCurrentInputMethod(_methods.get(0));
 		}
+	}
+	
+	public void setCurrentInputMethod(IKerKerInputMethod method)
+	{
+		if (_currentMethod != null)
+			_currentMethod.destroyInputMethod();
 		
+		_currentMethod = method;
 		_currentMethod.initInputMethod(this);
 		_currentMethod.onEnterInputMethod();
 		_kbm.setCurrentKeyboard(_currentMethod.getDesiredKeyboard());
@@ -136,34 +152,31 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	public boolean onKeyDown(int keyCode, KeyEvent e)
 	{
 		// Allow user to user BACK key to hide SIP
-		if (e.getKeyCode() == KeyEvent.KEYCODE_BACK)
+		if (e.getKeyCode() == KeyEvent.KEYCODE_BACK || e.getKeyCode() == KeyEvent.KEYCODE_SEARCH || e.getKeyCode() == KeyEvent.KEYCODE_MENU ||
+				e.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP && e.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT && e.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT)
 			return false;
 		
-		if (_currentMethod != null && _currentMethod.wantHandleEvent(e.getKeyCode()))
-			_currentMethod.onKeyEvent(keyCode, new int[]{keyCode});
-		else
+		if (e.getKeyCode() == KeyEvent.KEYCODE_ALT_LEFT)
 		{
-			switch(e.getKeyCode())
+			if (_currentMode == InputMode.MODE_IME)
 			{
-			case KeyEvent.KEYCODE_MENU:
-				return false;
-			case KeyEvent.KEYCODE_ALT_LEFT:
-				requestNextInputMethod();
-				break;
-			case KBManager.KEYCODE_DPAD_UP:
-				getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DPAD_UP);
-				break;
-			case KBManager.KEYCODE_DPAD_DOWN:
-				getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DPAD_DOWN);
-				break;
-			case KBManager.KEYCODE_DPAD_LEFT:
-				getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DPAD_LEFT);
-				break;
-			case KBManager.KEYCODE_DPAD_RIGHT:
-				getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DPAD_RIGHT);
-				break;
+				_currentMethod.commitCurrentComposingBuffer();
+				_currentMode = InputMode.MODE_ABC;
+				showIMENamePopup("英數鍵盤");
 			}
+			else
+			{
+				_currentMode = InputMode.MODE_IME;
+				if (_currentMethod == null)
+					requestNextInputMethod();
+				_currentMethod.onEnterInputMethod();
+				showIMENamePopup(_currentMethod.getName());
+			}
+			return true;
 		}
+		
+		if (_currentMode == InputMode.MODE_IME && _currentMethod != null && _currentMethod.wantHandleEvent(e.getKeyCode()))
+			return _currentMethod.onKeyEvent(keyCode, new int[]{keyCode});
 		
 		return false;
 	}
@@ -247,16 +260,41 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		}
 		else
 			if (_currentMethod != null) _currentMethod.onKeyEvent(primaryCode, keyCodes);
+		
+		// User feedbacks
+		if (shouldMakeNoise)
+		{
+			switch(primaryCode)
+			{
+			case '\n':
+				playAudioResource(R.raw.returndown);
+				playAudioResource(R.raw.returnup);
+				break;
+			case ' ':
+				playAudioResource(R.raw.spacedown);
+				playAudioResource(R.raw.spaceup);
+				break;
+			default:
+				playAudioResource(R.raw.keydown);
+				playAudioResource(R.raw.keyup);
+			}
+		}
+		
+		if (shouldVibrate)
+			((Vibrator)getFrontend().getSystemService(Context.VIBRATOR_SERVICE)).vibrate(50);
 	}
 
 	public void onText(CharSequence text) {
 		_currentMethod.onTextEvent(text);
 	}
+	
+	public void swipeDown() {
+		getFrontend().requestHideSelf(0);
+	}
 
 	// Currently we have nothing to do here...
 	public void onPress(int primaryCode) {}
 	public void onRelease(int primaryCode) {}
-	public void swipeDown() {}
 	public void swipeLeft() {}
 	public void swipeRight() {}
 	public void swipeUp() {}
@@ -275,11 +313,15 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 
 	public void showCandidatesView() {
 		_frontEnd.setCandidatesViewShown(true);
+		_candidatesShown = true;
 	}
 	
 	public void hideCandidatesView() {
 		if (_currentMode != InputMode.MODE_IME)
+		{
 			_frontEnd.setCandidatesViewShown(false);
+			_candidatesShown = false;
+		}
 		
 		if (_candidatesContainer != null)
 			clearCandidates();
@@ -310,34 +352,59 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	
 	public void showPopup(final CharSequence msg)
     {
-    	_txtvMsg.setText(msg);
-    	_txtvMsg.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-    	int wordWidth = (int)(_pntText.measureText(msg.toString()));
-    	int popupWidth = wordWidth + _txtvMsg.getPaddingLeft() + _txtvMsg.getPaddingRight();
-    	int popupHeight = _txtvMsg.getMeasuredHeight();
-    	int popupX = (_kbm.getCurrentKeyboardView().getWidth() - popupWidth) / 2;
-    	int popupY = -popupHeight;
-    	
-    	int[] offset = new int[2];
-    	_kbm.getCurrentKeyboardView().getLocationInWindow(offset);
-    	popupY += offset[1];
-    	
-    	if (_winMsg.isShowing())
-    		_winMsg.update(popupX, popupY, popupWidth, popupHeight);
-    	else
-    	{
-    		_winMsg.setWidth(popupWidth);
-    		_winMsg.setHeight(popupHeight);
-    		_winMsg.showAtLocation(_kbm.getCurrentKeyboardView(), Gravity.NO_GRAVITY, popupX, popupY);
-    	}
-    	_txtvMsg.setVisibility(View.VISIBLE);
-    	
-    	_handler.postDelayed(new Runnable() {
-			public void run() {
-				if (_txtvMsg.getText() == msg.toString())
-					hidePopup();
-			}
-    	}, 700);
+		if (!_frontEnd.isInputViewShown() && !_candidatesShown)
+			return;
+		
+		if (_winMsg == null)
+		{
+			Log.i("KerKerInputCore", "Re-create popup window");
+			_winMsg = new PopupWindow(_frontEnd);
+			_winMsg.setWindowLayoutMode(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			_winMsg.setBackgroundDrawable(null);
+			_txtvMsg = (TextView) getInflater().inflate(R.layout.candidates_preview, null);
+			_winMsg.setContentView(_txtvMsg);
+		}
+
+		try
+		{
+			View baseView = (_frontEnd.isInputViewShown() ? _kbm.getCurrentKeyboardView() : _candidatesContainer);
+			
+	    	_txtvMsg.setText(msg);
+	    	_txtvMsg.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+	    	int wordWidth = (int)(_pntText.measureText(msg.toString()));
+	    	int popupWidth = wordWidth + _txtvMsg.getPaddingLeft() + _txtvMsg.getPaddingRight();
+	    	int popupHeight = _txtvMsg.getMeasuredHeight();
+	    	int popupX = (baseView.getWidth() - popupWidth) / 2;
+	    	int popupY = -popupHeight;
+	    	
+	    	int[] offset = new int[2];
+	    	baseView.getLocationInWindow(offset);
+	    	popupY += offset[1];
+	    	
+	    	if (_winMsg.isShowing())
+	    		_winMsg.update(popupX, popupY, popupWidth, popupHeight);
+	    	else
+	    	{
+	    		_winMsg.setWidth(popupWidth);
+	    		_winMsg.setHeight(popupHeight);
+	    		_winMsg.showAtLocation(baseView, Gravity.NO_GRAVITY, popupX, popupY);
+	    	}
+	    	_txtvMsg.setVisibility(View.VISIBLE);
+	    	
+	    	_handler.postDelayed(new Runnable() {
+				public void run() {
+					if (_txtvMsg.getText() == msg.toString())
+						hidePopup();
+				}
+	    	}, 700);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			Log.e("KerKerInputCore", "Show popup failed, force reset popup window.");
+			_winMsg = null;
+			_txtvMsg = null;
+		}
     }
     
     private void hidePopup()
@@ -355,4 +422,77 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		hideCandidatesView();
 	}
 
+	public void setShouldMakeNoise(Boolean shouldMakeNoise) {
+		this.shouldMakeNoise = shouldMakeNoise;
+		
+		if (shouldMakeNoise)
+		{
+			sndPool = new SoundPool(6, AudioManager.STREAM_SYSTEM, 0);
+		}
+		else
+		{
+			if (sndPool != null)
+				sndPool.release();
+			sndPool = null;
+			
+			sndPoolMap = null;
+		}
+	}
+
+	public Boolean shouldMakeNoise() {
+		return shouldMakeNoise;
+	}
+
+	public void setShouldVibrate(Boolean shouldVibrate) {
+		this.shouldVibrate = shouldVibrate;
+	}
+
+	public Boolean shouldVibrate() {
+		return shouldVibrate;
+	}
+
+	public void initSounds()
+	{
+		if (sndPoolMap != null)
+			return;
+		
+		sndPoolMap = new HashMap<Integer, Integer>();
+		sndPoolMap.put(R.raw.keydown, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.keydown), 1));
+		sndPoolMap.put(R.raw.keyup, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.keyup), 1));
+		sndPoolMap.put(R.raw.spacedown, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.spacedown), 1));
+		sndPoolMap.put(R.raw.spacedown, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.spaceup), 1));
+		sndPoolMap.put(R.raw.returndown, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.returndown), 1));
+		sndPoolMap.put(R.raw.returnup, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.returnup), 1));
+	}
+	
+	public void releaseSounds()
+	{
+		if (sndPoolMap != null)
+		{
+			sndPoolMap.clear();
+			sndPoolMap = null;
+		}
+		
+		if (sndPool != null)
+		{
+			sndPool.release();
+			sndPool = null;
+		}
+	}
+	
+	private void playAudioResource(final int resourceID)
+	{
+		if (sndPool == null || sndPoolMap == null)
+			initSounds();
+		
+		int volume = ((AudioManager)getFrontend().getSystemService(Context.AUDIO_SERVICE)).getStreamVolume(AudioManager.STREAM_SYSTEM);
+		Integer rid = sndPoolMap.get(resourceID);
+		if (rid != null)
+			sndPool.play(rid, volume, volume, 1, 0, 1f);
+	}
+	
+	public void setCurrentMode(InputMode mode)
+	{
+		_currentMode = mode;
+	}
 }

@@ -60,27 +60,30 @@ public final class R {
         public static final int sym_keyboard_space=0x7f02002a;
     }
     public static final class id {
-        public static final int LinearLayout01=0x7f080005;
         public static final int btn_left=0x7f080001;
         public static final int btn_right=0x7f080004;
         public static final int candidates=0x7f080002;
         public static final int layout_btn_left=0x7f080000;
         public static final int layout_btn_right=0x7f080003;
-        public static final int lstSettings=0x7f080006;
-        public static final int mode_email=0x7f080008;
-        public static final int mode_im=0x7f080009;
-        public static final int mode_normal=0x7f08000a;
-        public static final int mode_url=0x7f080007;
+        public static final int mode_email=0x7f080006;
+        public static final int mode_im=0x7f080007;
+        public static final int mode_normal=0x7f080008;
+        public static final int mode_url=0x7f080005;
     }
     public static final class layout {
         public static final int candidates_bar=0x7f030000;
         public static final int candidates_preview=0x7f030001;
-        public static final int settings=0x7f030002;
     }
     public static final class raw {
         public static final int bpmf=0x7f050000;
         public static final int cj5=0x7f050001;
-        public static final int noseeing=0x7f050002;
+        public static final int keydown=0x7f050002;
+        public static final int keyup=0x7f050003;
+        public static final int noseeing=0x7f050004;
+        public static final int returndown=0x7f050005;
+        public static final int returnup=0x7f050006;
+        public static final int spacedown=0x7f050007;
+        public static final int spaceup=0x7f050008;
     }
     public static final class string {
         public static final int app_name=0x7f070000;
@@ -92,16 +95,17 @@ public final class R {
         public static final int update_str=0x7f070001;
     }
     public static final class xml {
-        public static final int kb_cj=0x7f040000;
-        public static final int kb_noseeing=0x7f040001;
-        public static final int kb_zhuyin=0x7f040002;
-        public static final int kbd_popup_template=0x7f040003;
-        public static final int kbd_qwerty=0x7f040004;
-        public static final int kbd_sym=0x7f040005;
-        public static final int kbd_sym_alt=0x7f040006;
-        public static final int method=0x7f040007;
-        public static final int popup_domains=0x7f040008;
-        public static final int popup_punctuation=0x7f040009;
-        public static final int popup_smileys=0x7f04000a;
+        public static final int global_settings=0x7f040000;
+        public static final int kb_cj=0x7f040001;
+        public static final int kb_noseeing=0x7f040002;
+        public static final int kb_zhuyin=0x7f040003;
+        public static final int kbd_popup_template=0x7f040004;
+        public static final int kbd_qwerty=0x7f040005;
+        public static final int kbd_sym=0x7f040006;
+        public static final int kbd_sym_alt=0x7f040007;
+        public static final int method=0x7f040008;
+        public static final int popup_domains=0x7f040009;
+        public static final int popup_punctuation=0x7f04000a;
+        public static final int popup_smileys=0x7f04000b;
     }
 }

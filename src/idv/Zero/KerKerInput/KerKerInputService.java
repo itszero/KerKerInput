@@ -3,15 +3,18 @@ package idv.Zero.KerKerInput;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.inputmethodservice.InputMethodService;
 import android.net.Uri;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.view.*;
 import android.view.inputmethod.EditorInfo;
 
 public class KerKerInputService extends InputMethodService {
 	private String updateServiceURL = "http://zero.itszero.info/KerKerInput/version.dat";
 	private KerKerInputCore _core = null;
+	private KeyboardView _currentKBView = null;
 	
 	public KerKerInputService()
 	{
@@ -19,7 +22,7 @@ public class KerKerInputService extends InputMethodService {
 		// android.os.Debug.waitForDebugger();
 		
 		// invokeVersionCheck();
-		_core = new KerKerInputCore(this);
+		_core = new KerKerInputCore(this);		
 	}
 	
 	@Override
@@ -31,12 +34,32 @@ public class KerKerInputService extends InputMethodService {
 	@Override
 	public View onCreateInputView()
 	{
-		return _core.requestInputView();
+		if (_currentKBView == null)
+		{
+			_currentKBView = new KeyboardView(_core.getFrontend(), null);
+			_currentKBView.setKeyboard(_core.getKeyboardManager().getCurrentKeyboard());
+			_currentKBView.setOnKeyboardActionListener(_core);
+		}
+		_core.getKeyboardManager().setKeyboardView(_currentKBView);
+		
+		return _currentKBView;
+	}
+
+	public void onStartInput(EditorInfo info, boolean restarting)
+	{
+		_core.getKeyboardManager().setImeOptions(info.imeOptions);
 	}
 	
 	public void onStartInputView(EditorInfo info, boolean restarting)
 	{
-		_core.getKeyboardManager().setImeOptions(info.inputType);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		_core.setShouldVibrate(prefs.getBoolean("vibration", false));
+		_core.setShouldMakeNoise(prefs.getBoolean("audio", true));
+	}
+	
+	public void onUnbindInput()
+	{
+		_core.releaseSounds();
 	}
 	
 	@Override

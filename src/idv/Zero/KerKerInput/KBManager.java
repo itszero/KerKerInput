@@ -1,6 +1,6 @@
 package idv.Zero.KerKerInput;
 
-import android.inputmethodservice.KeyboardView;
+import idv.Zero.KerKerInput.KerKerInputCore.InputMode;
 import android.view.inputmethod.EditorInfo;
 
 public class KBManager {
@@ -14,6 +14,7 @@ public class KBManager {
 	public static final int KEYCODE_DPAD_DOWN = -107;
 	public static final int KEYCODE_DPAD_LEFT = -108;
 	public static final int KEYCODE_DPAD_RIGHT = -109;
+	public static final int KEYCODE_IME_MENU = -110;
 	
 	private KerKerInputCore _core = null;
 	private KeyboardView _currentKBView = null;
@@ -27,15 +28,14 @@ public class KBManager {
 		_core = core;
 	}
 
+	public void setKeyboardView(KeyboardView kv)
+	{
+		_currentKBView = kv;
+		return;
+	}
+	
 	public KeyboardView getCurrentKeyboardView()
 	{
-		if (_currentKBView == null)
-		{
-			_currentKBView = new KeyboardView(_core.getFrontend(), null);
-			_currentKBView.setKeyboard(getCurrentKeyboard());
-			_currentKBView.setOnKeyboardActionListener(_core);
-		}
-		
 		return _currentKBView;
 	}
 	
@@ -78,7 +78,9 @@ public class KBManager {
 	{
 		_currentKB = kb;
 		if (_currentKBView != null) // It will be null if it's first run.
-			_currentKBView.setKeyboard(_currentKB);		
+		{
+			_currentKBView.setKeyboard(_currentKB);
+		}
 	}
 	
 	public void setKeyboardMode(int kbmode)
@@ -100,19 +102,25 @@ public class KBManager {
 	
 	public void applyIMEOptions()
 	{
-		getCurrentKeyboard().setImeOptions(_core.getFrontend().getResources(), imeOptions);
+		if (_currentKB == null)
+			return;
+		
+		_currentKB.setImeOptions(_core.getFrontend().getResources(), imeOptions);
 
 		int variation = imeOptions & EditorInfo.TYPE_MASK_VARIATION;		
 		switch (variation)
 		{
 		case EditorInfo.TYPE_TEXT_VARIATION_URI:
-			setKeyboardMode(R.id.mode_url);
+			_core.setCurrentMode(InputMode.MODE_ABC);
+			_kbMode = R.id.mode_url;
 			break;
 		case EditorInfo.TYPE_TEXT_VARIATION_EMAIL_ADDRESS:
-			setKeyboardMode(R.id.mode_email);
+			_core.setCurrentMode(InputMode.MODE_ABC);
+			_kbMode = R.id.mode_email;
 			break;
 		default:
-			setKeyboardMode(R.id.mode_normal);
+			_kbMode = R.id.mode_normal;
 		}
+		_currentKBView.setKeyboard(getCurrentKeyboard());
 	}
 }

@@ -85,9 +85,7 @@
     </Row>
 
     <Row android:keyboardMode="@+id/mode_url" android:rowEdgeFlags="bottom">
-        <Key android:codes="-2" android:keyLabel="@string/label_symbol_key" 
-                android:popupKeyboard="@xml/kbd_popup_template"
-                android:popupCharacters=""
+        <Key android:codes="-100" android:keyLabel="@string/label_symbol_key" 
                 android:keyWidth="15%p" android:keyEdgeFlags="left"/>
         <Key android:keyLabel=".com" android:keyOutputText=".com"
                 android:popupKeyboard="@xml/popup_domains"
@@ -108,9 +106,7 @@
     </Row>
 
     <Row android:keyboardMode="@+id/mode_email" android:rowEdgeFlags="bottom">
-        <Key android:codes="-2" android:keyLabel="@string/label_symbol_key" 
-                android:popupKeyboard="@xml/kbd_popup_template"
-                android:popupCharacters=""
+        <Key android:codes="-100" android:keyLabel="@string/label_symbol_key" 
                 android:keyWidth="10%p" android:keyEdgeFlags="left"/>
         <Key android:keyLabel="," android:keyWidth="15%p" />
         <Key android:keyLabel="\@" android:keyWidth="15%p"/>
@@ -129,9 +125,7 @@
     </Row>
 
     <Row android:keyboardMode="@+id/mode_im" android:rowEdgeFlags="bottom">
-        <Key android:codes="-2" android:keyLabel="@string/label_symbol_key" 
-                android:popupKeyboard="@xml/kbd_popup_template"
-                android:popupCharacters=""
+        <Key android:codes="-100" android:keyLabel="@string/label_symbol_key" 
                 android:keyWidth="20%p" android:keyEdgeFlags="left"/>
         <Key android:keyLabel="," android:keyWidth="15%p"/>
         <Key android:codes="32" android:keyIcon="@drawable/sym_keyboard_space" 

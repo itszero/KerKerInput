@@ -24,6 +24,7 @@ public class Keyboard extends android.inputmethodservice.Keyboard {
         if (key.codes[0] == 10) {
         	keyEnter = key;
         }
+        key.popupCharacters = key.label;
         return key;
     }
     
@@ -32,11 +33,16 @@ public class Keyboard extends android.inputmethodservice.Keyboard {
             return;
         }
         
-        switch (options&(EditorInfo.IME_MASK_ACTION|EditorInfo.IME_FLAG_NO_ENTER_ACTION)) {
+        switch (options & (EditorInfo.IME_MASK_ACTION | EditorInfo.IME_FLAG_NO_ENTER_ACTION)) {
             case EditorInfo.IME_ACTION_GO:
             	keyEnter.iconPreview = null;
             	keyEnter.icon = null;
             	keyEnter.label = "前往";
+                break;
+            case EditorInfo.IME_ACTION_DONE:
+            	keyEnter.iconPreview = null;
+            	keyEnter.icon = null;
+            	keyEnter.label = "完成";
                 break;
             case EditorInfo.IME_ACTION_NEXT:
             	keyEnter.iconPreview = null;
