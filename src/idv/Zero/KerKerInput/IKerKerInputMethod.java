@@ -11,7 +11,7 @@ public abstract class IKerKerInputMethod {
 		_core.clearCandidates();
 		_core.hideCandidatesView();
 	}
-	abstract public void destroyInputMethod();
+	abstract public void onLeaveInputMethod();
 	abstract public String getName();
 	abstract public void commitCurrentComposingBuffer();
 

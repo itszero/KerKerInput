@@ -121,6 +121,8 @@ public class KBManager {
 		default:
 			_kbMode = R.id.mode_normal;
 		}
-		_currentKBView.setKeyboard(getCurrentKeyboard());
+		
+		if (_currentKBView != null)
+			_currentKBView.setKeyboard(getCurrentKeyboard());
 	}
 }

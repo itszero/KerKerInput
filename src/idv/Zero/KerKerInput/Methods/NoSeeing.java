@@ -23,6 +23,7 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private String _dbpath;
 	private int _currentPage;
 	private int _totalPages;
+	private boolean copying = false;
 	
 	private SQLiteDatabase db;
 	
@@ -39,6 +40,7 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		try
 		{
 			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
+			db.close();
 		}
 		catch(SQLiteException ex)
 		{
@@ -47,6 +49,8 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 
 			new Thread(new Runnable() {
 				public void run() {
+					copying = true;
+					
 					// Create the database (and the directories required) then close it.
 					db = c.openOrCreateDatabase("noseeing.db", 0, null);
 					db.close();
@@ -69,6 +73,7 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 
 					db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 					db.setLocale(Locale.TRADITIONAL_CHINESE);
+					copying = false;
 			}
 			}).start();
 		}
@@ -76,11 +81,17 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	
 	public void onEnterInputMethod()
 	{
+		if (!copying)
+		{
+			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
+			db.setLocale(Locale.TRADITIONAL_CHINESE);			
+		}
+		
 		inputBufferRaw.delete(0, inputBufferRaw.length());
 		updateCandidates();
 	}
 	
-	public void destroyInputMethod()
+	public void onLeaveInputMethod()
 	{
 		if (db != null)
 			db.close();

@@ -12,5 +12,5 @@ public class KeyboardView extends android.inputmethodservice.KeyboardView {
 	public KeyboardView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 	}
-
+	
 }

@@ -28,36 +28,37 @@ public final class R {
         public static final int ic_suggest_strip_scroll_left_arrow=0x7f02000a;
         public static final int ic_suggest_strip_scroll_right_arrow=0x7f02000b;
         public static final int icon=0x7f02000c;
-        public static final int keyboard_suggest_strip=0x7f02000d;
-        public static final int keyboard_suggest_strip_divider=0x7f02000e;
-        public static final int sym_keyboard_delete=0x7f02000f;
-        public static final int sym_keyboard_done=0x7f020010;
-        public static final int sym_keyboard_feedback_delete=0x7f020011;
-        public static final int sym_keyboard_feedback_done=0x7f020012;
-        public static final int sym_keyboard_feedback_numalt=0x7f020013;
-        public static final int sym_keyboard_feedback_return=0x7f020014;
-        public static final int sym_keyboard_feedback_search=0x7f020015;
-        public static final int sym_keyboard_feedback_shift=0x7f020016;
-        public static final int sym_keyboard_feedback_shift_locked=0x7f020017;
-        public static final int sym_keyboard_feedback_space=0x7f020018;
-        public static final int sym_keyboard_num0=0x7f020019;
-        public static final int sym_keyboard_num1=0x7f02001a;
-        public static final int sym_keyboard_num2=0x7f02001b;
-        public static final int sym_keyboard_num3=0x7f02001c;
-        public static final int sym_keyboard_num4=0x7f02001d;
-        public static final int sym_keyboard_num5=0x7f02001e;
-        public static final int sym_keyboard_num6=0x7f02001f;
-        public static final int sym_keyboard_num7=0x7f020020;
-        public static final int sym_keyboard_num8=0x7f020021;
-        public static final int sym_keyboard_num9=0x7f020022;
-        public static final int sym_keyboard_numalt=0x7f020023;
-        public static final int sym_keyboard_numpound=0x7f020024;
-        public static final int sym_keyboard_numstar=0x7f020025;
-        public static final int sym_keyboard_return=0x7f020026;
-        public static final int sym_keyboard_search=0x7f020027;
-        public static final int sym_keyboard_shift=0x7f020028;
-        public static final int sym_keyboard_shift_locked=0x7f020029;
-        public static final int sym_keyboard_space=0x7f02002a;
+        public static final int key=0x7f02000d;
+        public static final int keyboard_suggest_strip=0x7f02000e;
+        public static final int keyboard_suggest_strip_divider=0x7f02000f;
+        public static final int sym_keyboard_delete=0x7f020010;
+        public static final int sym_keyboard_done=0x7f020011;
+        public static final int sym_keyboard_feedback_delete=0x7f020012;
+        public static final int sym_keyboard_feedback_done=0x7f020013;
+        public static final int sym_keyboard_feedback_numalt=0x7f020014;
+        public static final int sym_keyboard_feedback_return=0x7f020015;
+        public static final int sym_keyboard_feedback_search=0x7f020016;
+        public static final int sym_keyboard_feedback_shift=0x7f020017;
+        public static final int sym_keyboard_feedback_shift_locked=0x7f020018;
+        public static final int sym_keyboard_feedback_space=0x7f020019;
+        public static final int sym_keyboard_num0=0x7f02001a;
+        public static final int sym_keyboard_num1=0x7f02001b;
+        public static final int sym_keyboard_num2=0x7f02001c;
+        public static final int sym_keyboard_num3=0x7f02001d;
+        public static final int sym_keyboard_num4=0x7f02001e;
+        public static final int sym_keyboard_num5=0x7f02001f;
+        public static final int sym_keyboard_num6=0x7f020020;
+        public static final int sym_keyboard_num7=0x7f020021;
+        public static final int sym_keyboard_num8=0x7f020022;
+        public static final int sym_keyboard_num9=0x7f020023;
+        public static final int sym_keyboard_numalt=0x7f020024;
+        public static final int sym_keyboard_numpound=0x7f020025;
+        public static final int sym_keyboard_numstar=0x7f020026;
+        public static final int sym_keyboard_return=0x7f020027;
+        public static final int sym_keyboard_search=0x7f020028;
+        public static final int sym_keyboard_shift=0x7f020029;
+        public static final int sym_keyboard_shift_locked=0x7f02002a;
+        public static final int sym_keyboard_space=0x7f02002b;
     }
     public static final class id {
         public static final int btn_left=0x7f080001;
@@ -73,6 +74,7 @@ public final class R {
     public static final class layout {
         public static final int candidates_bar=0x7f030000;
         public static final int candidates_preview=0x7f030001;
+        public static final int keyboard_view=0x7f030002;
     }
     public static final class raw {
         public static final int bpmf=0x7f050000;

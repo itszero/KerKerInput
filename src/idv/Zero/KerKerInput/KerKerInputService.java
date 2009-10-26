@@ -8,6 +8,7 @@ import android.inputmethodservice.InputMethodService;
 import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.*;
 import android.view.inputmethod.EditorInfo;
 
@@ -22,7 +23,7 @@ public class KerKerInputService extends InputMethodService {
 		// android.os.Debug.waitForDebugger();
 		
 		// invokeVersionCheck();
-		_core = new KerKerInputCore(this);		
+		_core = new KerKerInputCore(this);
 	}
 	
 	@Override
@@ -34,12 +35,9 @@ public class KerKerInputService extends InputMethodService {
 	@Override
 	public View onCreateInputView()
 	{
-		if (_currentKBView == null)
-		{
-			_currentKBView = new KeyboardView(_core.getFrontend(), null);
-			_currentKBView.setKeyboard(_core.getKeyboardManager().getCurrentKeyboard());
-			_currentKBView.setOnKeyboardActionListener(_core);
-		}
+		_currentKBView = (KeyboardView) View.inflate(this, R.layout.keyboard_view, null);
+		_currentKBView.setKeyboard(_core.getKeyboardManager().getCurrentKeyboard());
+		_currentKBView.setOnKeyboardActionListener(_core);
 		_core.getKeyboardManager().setKeyboardView(_currentKBView);
 		
 		return _currentKBView;
@@ -47,6 +45,15 @@ public class KerKerInputService extends InputMethodService {
 
 	public void onStartInput(EditorInfo info, boolean restarting)
 	{
+		// Force generate a keyboard
+		_core.getKeyboardManager().getCurrentKeyboard();
+		
+		if (_core.getCurrentInputMethod() != null)
+		{
+			_core.getCurrentInputMethod().onLeaveInputMethod();
+			_core.getCurrentInputMethod().onEnterInputMethod();
+		}
+		
 		_core.getKeyboardManager().setImeOptions(info.imeOptions);
 	}
 	
@@ -55,10 +62,15 @@ public class KerKerInputService extends InputMethodService {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		_core.setShouldVibrate(prefs.getBoolean("vibration", false));
 		_core.setShouldMakeNoise(prefs.getBoolean("audio", true));
+		
+		// Refresh all cache
+		_currentKBView.closing();
 	}
 	
 	public void onUnbindInput()
 	{
+		super.onUnbindInput();
+		
 		_core.releaseSounds();
 	}
 	

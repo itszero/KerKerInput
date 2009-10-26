@@ -26,6 +26,7 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private int _totalPages;
 	private HashMap<CharSequence, CharSequence> keyNames;
 	private SQLiteDatabase db;
+	private boolean copying = false;
 	
 	public void initInputMethod(KerKerInputCore core) {
 		super.initInputMethod(core);
@@ -42,6 +43,7 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		{
 			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 			loadKeyNames();
+			db.close();
 		}
 		catch(SQLiteException ex)
 		{
@@ -50,6 +52,8 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 
 			new Thread(new Runnable() {
 				public void run() {
+					copying = true;
+					
 					// Create the database (and the directories required) then close it.
 					db = c.openOrCreateDatabase("cj5.db", 0, null);
 					db.close();
@@ -72,6 +76,8 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 					db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 					db.setLocale(Locale.TRADITIONAL_CHINESE);
 					loadKeyNames();
+					
+					copying = false;
 			}
 			}).start();
 		}
@@ -79,11 +85,17 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	
 	public void onEnterInputMethod()
 	{
+		if (!copying)
+		{
+			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
+			db.setLocale(Locale.TRADITIONAL_CHINESE);
+		}
+
 		inputBufferRaw.delete(0, inputBufferRaw.length());
 		updateCandidates();
 	}
 	
-	public void destroyInputMethod()
+	public void onLeaveInputMethod()
 	{
 		if (db != null)
 			db.close();

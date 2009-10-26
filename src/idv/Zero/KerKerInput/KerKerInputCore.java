@@ -129,7 +129,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	public void setCurrentInputMethod(IKerKerInputMethod method)
 	{
 		if (_currentMethod != null)
-			_currentMethod.destroyInputMethod();
+			_currentMethod.onLeaveInputMethod();
 		
 		_currentMethod = method;
 		_currentMethod.initInputMethod(this);
@@ -246,6 +246,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 				_currentMethod.onEnterInputMethod();
 				_kbm.setNativeKeyboard(NativeKeyboardTypes.MODE_IME);
 				showIMENamePopup(_currentMethod.getName());
+				showCandidatesView();
 				break;
 			case Keyboard.KEYCODE_DELETE:
 				getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
@@ -271,9 +272,9 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 				playAudioResource(R.raw.returnup);
 				break;
 			case ' ':
-				playAudioResource(R.raw.spacedown);
-				playAudioResource(R.raw.spaceup);
-				break;
+				// playAudioResource(R.raw.spacedown);
+				// playAudioResource(R.raw.spaceup);
+				// break;
 			default:
 				playAudioResource(R.raw.keydown);
 				playAudioResource(R.raw.keyup);
@@ -428,6 +429,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		if (shouldMakeNoise)
 		{
 			sndPool = new SoundPool(6, AudioManager.STREAM_SYSTEM, 0);
+			sndPoolMap = null;
 		}
 		else
 		{
@@ -460,7 +462,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		sndPoolMap.put(R.raw.keydown, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.keydown), 1));
 		sndPoolMap.put(R.raw.keyup, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.keyup), 1));
 		sndPoolMap.put(R.raw.spacedown, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.spacedown), 1));
-		sndPoolMap.put(R.raw.spacedown, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.spaceup), 1));
+		sndPoolMap.put(R.raw.spaceup, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.spaceup), 1));
 		sndPoolMap.put(R.raw.returndown, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.returndown), 1));
 		sndPoolMap.put(R.raw.returnup, sndPool.load(getFrontend().getResources().openRawResourceFd(R.raw.returnup), 1));
 	}

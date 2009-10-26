@@ -47,6 +47,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		{
 			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 			db.setLocale(Locale.TRADITIONAL_CHINESE);
+			db.close();
 		}
 		catch(SQLiteException ex)
 		{
@@ -70,10 +71,6 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}			
-			
-			// Copied, re-open it.
-			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
-			db.setLocale(Locale.TRADITIONAL_CHINESE);
 		}
 	}
 	
@@ -82,9 +79,12 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		currentState = InputState.STATE_INPUT;
 		inputBufferRaw = "";
 		updateCandidates();
+		// Copied, re-open it.
+		db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
+		db.setLocale(Locale.TRADITIONAL_CHINESE);
 	}
 	
-	public void destroyInputMethod()
+	public void onLeaveInputMethod()
 	{
 		db.close();
 	}
@@ -185,6 +185,8 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				    // This prevents user hit tone symbol twice makes program crash.
 				    // It's because first sign interpreted as bpmf symbol, and second one is treated as candidate choose.
 				    // Also prevent user select non-exist candidates on physical kb.
+					if (_totalPages < 0) break;
+					
 					int CANDIDATES_PER_PAGE = (_currentCandidates.size() / _totalPages);
 				    if ((_currentPage * CANDIDATES_PER_PAGE + keyCode - KeyEvent.KEYCODE_0 - 1) < _currentCandidates.size())
 				    {
