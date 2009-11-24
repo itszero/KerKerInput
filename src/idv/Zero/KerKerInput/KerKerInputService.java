@@ -8,7 +8,6 @@ import android.inputmethodservice.InputMethodService;
 import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.*;
 import android.view.inputmethod.EditorInfo;
 
@@ -42,19 +41,10 @@ public class KerKerInputService extends InputMethodService {
 		
 		return _currentKBView;
 	}
-
-	public void onStartInput(EditorInfo info, boolean restarting)
+	
+	public void restoreKerKerKeyboardView()
 	{
-		// Force generate a keyboard
-		_core.getKeyboardManager().getCurrentKeyboard();
-		
-		if (_core.getCurrentInputMethod() != null)
-		{
-			_core.getCurrentInputMethod().onLeaveInputMethod();
-			_core.getCurrentInputMethod().onEnterInputMethod();
-		}
-		
-		_core.getKeyboardManager().setImeOptions(info.imeOptions);
+		setInputView(_currentKBView);
 	}
 	
 	public void onStartInputView(EditorInfo info, boolean restarting)
@@ -63,6 +53,17 @@ public class KerKerInputService extends InputMethodService {
 		_core.setShouldVibrate(prefs.getBoolean("vibration", false));
 		_core.setShouldMakeNoise(prefs.getBoolean("audio", true));
 		
+		// Force generate a keyboard
+		_core.getKeyboardManager().resetKeyboard();
+		
+		if (_core.getCurrentInputMethod() != null)
+		{
+			_core.getCurrentInputMethod().onLeaveInputMethod();
+			_core.getCurrentInputMethod().onEnterInputMethod();
+		}
+		
+		_core.getKeyboardManager().setImeOptions(info.imeOptions);
+
 		// Refresh all cache
 		_currentKBView.closing();
 	}
@@ -72,6 +73,13 @@ public class KerKerInputService extends InputMethodService {
 		super.onUnbindInput();
 		
 		_core.releaseSounds();
+	}
+	
+	public void onFinishInputView(boolean finishing)
+	{
+		super.onFinishInputView(finishing);
+		if (_core.getCurrentInputMethod() != null)
+			_core.getCurrentInputMethod().onLeaveInputMethod();
 	}
 	
 	@Override
@@ -114,6 +122,7 @@ public class KerKerInputService extends InputMethodService {
 		return e.getUnicodeChar();
 	}
 	
+	@SuppressWarnings("unused")
 	private void invokeVersionCheck()
 	{
 		final Handler AlertDialogShowCallBack = new Handler();

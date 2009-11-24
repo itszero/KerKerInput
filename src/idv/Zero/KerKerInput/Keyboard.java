@@ -1,8 +1,12 @@
 package idv.Zero.KerKerInput;
 
+import java.lang.reflect.Field;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import android.inputmethodservice.Keyboard.Row;
+import android.util.Log;
 import android.view.inputmethod.EditorInfo;
 
 public class Keyboard extends android.inputmethodservice.Keyboard {
@@ -50,6 +54,7 @@ public class Keyboard extends android.inputmethodservice.Keyboard {
             	keyEnter.label = "下格";
                 break;
             case EditorInfo.IME_ACTION_SEARCH:
+            	keyEnter.iconPreview = res.getDrawable(R.drawable.sym_keyboard_search);
             	keyEnter.icon = res.getDrawable(R.drawable.sym_keyboard_search);
             	keyEnter.label = null;
                 break;

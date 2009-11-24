@@ -22,20 +22,54 @@
 		                android:title="注音輸入法"
 		                android:summary=""
 		                android:defaultValue="true"
-		                android:enabled="false"/>
+		                android:enabled="true"/>
 		        <CheckBoxPreference
-		                android:key="enable_cj5"
+		                android:key="enable_noseeing"
 		                android:title="嘸蝦米輸入法"
 		                android:summary=""
 		                android:defaultValue="true"
-		                android:enabled="false"/>
+		                android:enabled="true"/>
 		        <CheckBoxPreference
 		                android:key="enable_cj5"
 		                android:title="倉頡輸入法"
 		                android:summary=""
 		                android:defaultValue="false"
-		                android:enabled="false"/>
+		                android:enabled="true"/>
+            <CheckBoxPreference
+                    android:key="enable_barcode"
+                    android:title="條碼輸入法"
+                    android:summary=""
+                    android:defaultValue="true"
+                    android:enabled="true"/>
 		</PreferenceScreen>
+
+    <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+      android:title="選擇外掛模組">
+            <CheckBoxPreference
+                    android:key="enable_anti_bpmf"
+                    android:title="禁止注音文"
+                    android:summary="此模組將禁止使用者輸入任何注音符號"
+                    android:defaultValue="true"
+                    android:enabled="true"/>
+            <CheckBoxPreference
+                    android:key="enable_auto_expand"
+                    android:title="自動展開"
+                    android:summary="此模組提供簡單的自動展開示範功能"
+                    android:defaultValue="true"
+                    android:enabled="true"/>
+            <CheckBoxPreference
+                    android:key="enable_dice"
+                    android:title="骰子樂"
+                    android:summary="輸入 幫我丟骰子 即可讓程式幫你丟骰子"
+                    android:defaultValue="false"
+                    android:enabled="true"/>
+            <CheckBoxPreference
+                    android:key="enable_weather"
+                    android:title="天氣查詢"
+                    android:summary="輸入程式名稱可自動查詢天氣。（僅支援 台北 ）"
+                    android:defaultValue="true"
+                    android:enabled="true"/>
+    </PreferenceScreen>
 	</PreferenceCategory>
 	
 	<PreferenceCategory xmlns:android="http://schemas.android.com/apk/res/android"

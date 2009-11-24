@@ -2,5 +2,6 @@
 <idv.Zero.KerKerInput.KeyboardView
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@android:id/keyboardView"
-	android:keyPreviewLayout="@+layout/candidates_preview"
+	android:keyBackground="@drawable/btn_keyboard_key"
+	android:background="@drawable/keyboard_background"
 	/>

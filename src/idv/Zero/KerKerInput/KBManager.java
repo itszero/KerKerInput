@@ -1,6 +1,7 @@
 package idv.Zero.KerKerInput;
 
 import idv.Zero.KerKerInput.KerKerInputCore.InputMode;
+import android.util.Log;
 import android.view.inputmethod.EditorInfo;
 
 public class KBManager {
@@ -28,8 +29,15 @@ public class KBManager {
 		_core = core;
 	}
 
+	public void resetKeyboard()
+	{
+		_currentKB = null;
+		getCurrentKeyboard();
+	}
+	
 	public void setKeyboardView(KeyboardView kv)
 	{
+		Log.i("KBManager", "setKeyboardView = " + kv);
 		_currentKBView = kv;
 		return;
 	}
@@ -76,10 +84,16 @@ public class KBManager {
 	
 	public void setCurrentKeyboard(Keyboard kb)
 	{
+		if (kb == null)
+			return;
+		
 		_currentKB = kb;
+		Log.i("KBManager", "currentKBView = " + _currentKBView);
 		if (_currentKBView != null) // It will be null if it's first run.
 		{
+			Log.i("KBManager", "Update KeyboardView for new Keyboard");
 			_currentKBView.setKeyboard(_currentKB);
+			applyIMEOptions();
 		}
 	}
 	

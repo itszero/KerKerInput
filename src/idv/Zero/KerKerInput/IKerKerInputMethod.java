@@ -1,5 +1,7 @@
 package idv.Zero.KerKerInput;
 
+import android.view.View;
+
 public abstract class IKerKerInputMethod {
 	protected KerKerInputCore _core;
 	
@@ -14,6 +16,9 @@ public abstract class IKerKerInputMethod {
 	abstract public void onLeaveInputMethod();
 	abstract public String getName();
 	abstract public void commitCurrentComposingBuffer();
+	public boolean shouldAvailableForSwitchingButton() { return true; }
+	public boolean hasCustomInputView() { return false; }
+	public View onCreateInputView() { return null; }
 
 	/* Keyboard Events */
 	public Keyboard getDesiredKeyboard() { return null; }

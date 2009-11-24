@@ -261,6 +261,9 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	{
 		if (selectedCandidate < 0)
 			selectedCandidate = 0;
+		if (_currentCandidates.size() == 0)
+			return;
+		
 		commitText(_currentCandidates.get(selectedCandidate));
 	}
 		

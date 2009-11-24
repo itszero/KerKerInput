@@ -10,21 +10,28 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.MeasureSpec;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.InputConnection;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.ColorDrawable;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.preference.PreferenceManager;
 
 public class KerKerInputCore implements OnKeyboardActionListener {
 	public enum InputMode { MODE_ABC, MODE_SYM, MODE_SYM_ALT, MODE_IME };
@@ -32,6 +39,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	private KerKerInputService _frontEnd = null;
 	private KBManager _kbm = null;
 	private ArrayList<IKerKerInputMethod> _methods;
+	private ArrayList<IKerKerInputFilter> _filters;
 	private IKerKerInputMethod _currentMethod;
 	private InputMode _currentMode;
 	private CandidatesViewContainer _candidatesContainer;
@@ -49,6 +57,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		_frontEnd = fe;
 		_kbm = new KBManager(this);
 		_methods = new ArrayList<IKerKerInputMethod>();
+		_filters = new ArrayList<IKerKerInputFilter>();
 		_currentMethod = null;
 		_currentMode = InputMode.MODE_ABC;
 		_handler = new Handler();
@@ -68,19 +77,66 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	{
 		Log.i("KerKerInputCore", "Initializing...");
 		_winMsg = null;
-		registerAvailableInputMethods();
+		registerAvailableModules();
 	}
 	
-	public void registerAvailableInputMethods() {
+	public void registerAvailableModules() {
 		IKerKerInputMethod m;
+		IKerKerInputFilter f;
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_frontEnd);
 		
-		m = new idv.Zero.KerKerInput.Methods.BPMFInput();
-		_methods.add(m);
-		m = new idv.Zero.KerKerInput.Methods.NoSeeing();
-		_methods.add(m);
-		m = new idv.Zero.KerKerInput.Methods.CJInput();
-		_methods.add(m);
-	}
+		if (prefs.getBoolean("enable_bpmf", true))
+		{
+			m = new idv.Zero.KerKerInput.Methods.BPMFInput();
+			_methods.add(m);
+		}
+		
+		if (prefs.getBoolean("enable_noseeing", true))
+		{
+			m = new idv.Zero.KerKerInput.Methods.NoSeeing();
+			_methods.add(m);
+		}
+		
+		if (prefs.getBoolean("enable_cj5", false))
+		{
+			m = new idv.Zero.KerKerInput.Methods.CJInput();
+			_methods.add(m);
+		}
+		
+		if (prefs.getBoolean("enable_barode", true))
+		{
+			m = new idv.Zero.KerKerInput.Methods.BarcodeInput();
+			_methods.add(m);
+		}
+		
+		if (prefs.getBoolean("enable_anti_bpmf", true))
+		{
+			f = new idv.Zero.KerKerInput.Filters.AntiPhoneticFilter();
+			f.onCreateFilter(this);
+			_filters.add(f);
+		}
+
+		if (prefs.getBoolean("enable_auto_expand", true))
+		{
+			f = new idv.Zero.KerKerInput.Filters.AutoExpandFilter();
+			f.onCreateFilter(this);
+			_filters.add(f);
+		}
+
+		if (prefs.getBoolean("enable_dice", true))
+		{
+			f = new idv.Zero.KerKerInput.Filters.DiceFilter();
+			f.onCreateFilter(this);
+			_filters.add(f);
+		}
+
+		if (prefs.getBoolean("enable_weather", true))
+		{
+			f = new idv.Zero.KerKerInput.Filters.WeatherFilter();
+			f.onCreateFilter(this);
+			_filters.add(f);
+		}
+}
 
 	public KerKerInputService getFrontend()
 	{
@@ -90,12 +146,6 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	public LayoutInflater getInflater()
 	{
 		return _frontEnd.getLayoutInflater();
-	}
-	
-	public View requestInputView()
-	{
-		_kbm = new KBManager(this);
-		return _kbm.getCurrentKeyboardView();
 	}
 	
 	public View requestCandidatesView()
@@ -119,10 +169,20 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		else
 		{
 			int curIndex = _methods.indexOf(_currentMethod);
-			if (_methods.size() > curIndex + 1)
-				setCurrentInputMethod(_methods.get(curIndex + 1));
-			else
-				setCurrentInputMethod(_methods.get(0));
+			
+			while(true)
+			{	
+				if (_methods.size() <= curIndex + 1)
+					curIndex = 0;
+				else
+					curIndex++;
+				
+				if (_methods.get(curIndex).shouldAvailableForSwitchingButton())
+				{
+					setCurrentInputMethod(_methods.get(curIndex));
+					break;
+				}
+			}
 		}
 	}
 	
@@ -131,11 +191,16 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		if (_currentMethod != null)
 			_currentMethod.onLeaveInputMethod();
 		
+		Log.i("KerKerInputCore", "setCurrentInputMethod = " + method);
 		_currentMethod = method;
 		_currentMethod.initInputMethod(this);
+		if (!_currentMethod.hasCustomInputView())
+			getFrontend().restoreKerKerKeyboardView();
+		else
+			getFrontend().setInputView(_currentMethod.onCreateInputView());
 		_currentMethod.onEnterInputMethod();
 		_kbm.setCurrentKeyboard(_currentMethod.getDesiredKeyboard());
-		showIMENamePopup(_currentMethod.getName());
+		postShowPopup(_currentMethod.getName());
 	}
 	
 	public IKerKerInputMethod getCurrentInputMethod()
@@ -162,7 +227,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 			{
 				_currentMethod.commitCurrentComposingBuffer();
 				_currentMode = InputMode.MODE_ABC;
-				showIMENamePopup("英數鍵盤");
+				postShowPopup("英數鍵盤");
 			}
 			else
 			{
@@ -170,7 +235,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 				if (_currentMethod == null)
 					requestNextInputMethod();
 				_currentMethod.onEnterInputMethod();
-				showIMENamePopup(_currentMethod.getName());
+				postShowPopup(_currentMethod.getName());
 			}
 			return true;
 		}
@@ -217,7 +282,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 
 				_currentMode = InputMode.MODE_SYM;
 				_kbm.setNativeKeyboard(NativeKeyboardTypes.MODE_SYM);
-				showIMENamePopup("123");
+				postShowPopup("123");
 				hideCandidatesView();
 				
 				break;
@@ -227,7 +292,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 
 				_currentMode = InputMode.MODE_SYM_ALT;
 				_kbm.setNativeKeyboard(NativeKeyboardTypes.MODE_SYM_ALT);
-				showIMENamePopup("#+=");
+				postShowPopup("#+=");
 				hideCandidatesView();
 				break;
 			case KBManager.KEYCODE_ABC: // ABC Keyboard
@@ -236,26 +301,79 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 
 				_currentMode = InputMode.MODE_ABC;
 				_kbm.setNativeKeyboard(NativeKeyboardTypes.MODE_ABC);
-				showIMENamePopup("ABC");
+				postShowPopup("ABC");
 				hideCandidatesView();
 				break;
 			case KBManager.KEYCODE_IME: // IME Keyboard
 				_currentMode = InputMode.MODE_IME;
+				//showCandidatesView();
 				if (_currentMethod == null)
 					requestNextInputMethod();
 				_currentMethod.onEnterInputMethod();
 				_kbm.setNativeKeyboard(NativeKeyboardTypes.MODE_IME);
-				showIMENamePopup(_currentMethod.getName());
-				showCandidatesView();
+				postShowPopup(_currentMethod.getName());
+				break;
+			case KBManager.KEYCODE_IME_MENU:
+				String[] imeNames = new String [_methods.size()];
+				int i=0;
+				for(IKerKerInputMethod method : _methods)
+					imeNames[i++] = method.getName();
+				final PopupWindow win = new PopupWindow(_frontEnd);
+				win.setBackgroundDrawable(new ColorDrawable(Color.argb(220, 0, 0, 0)));
+				win.setWindowLayoutMode(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				win.setContentView(getInflater().inflate(R.layout.method_chooser, null));
+		        final ListView lstIME = (ListView) win.getContentView().findViewById(R.id.lstIME);
+		        lstIME.setAdapter(new ArrayAdapter<String>(_frontEnd, android.R.layout.simple_list_item_1, imeNames));
+		        win.setWidth(320);
+		        win.setHeight(_kbm.getCurrentKeyboardView().getHeight());
+		        win.setOutsideTouchable(false);
+		        win.setTouchable(true);
+		        win.setTouchInterceptor(new OnTouchListener() {
+		        	private boolean detectedMove = false;
+		        	private float lastX, lastY;
+		        	
+					public boolean onTouch(View v, MotionEvent event) {
+						if (event.getAction() == MotionEvent.ACTION_UP)
+						{
+							if (detectedMove)
+							{
+								detectedMove = false;
+								return false;
+							}
+							
+							event.offsetLocation(-lstIME.getLeft(), -lstIME.getTop());
+							Log.i("PopupWindow", "IME selected!");
+							int pos = lstIME.pointToPosition((int)event.getX(), (int)event.getY());
+							if (pos > ListView.INVALID_POSITION)
+							{
+								_currentMode = InputMode.MODE_IME;
+								setCurrentInputMethod(_methods.get(pos));
+								win.dismiss();
+							}
+						}
+						else if (event.getAction() == MotionEvent.ACTION_MOVE && Math.abs(lastX - event.getX()) > 5 && Math.abs(lastY - event.getY()) > 5)
+							detectedMove = true;
+						else if (event.getAction() == MotionEvent.ACTION_DOWN)
+						{
+							lastX = event.getX();
+							lastY = event.getY();
+						}
+						return false;
+					}
+				});
+				win.showAtLocation(_kbm.getCurrentKeyboardView(), Gravity.BOTTOM, 0, 0);
+				lstIME.requestFocusFromTouch();
 				break;
 			case Keyboard.KEYCODE_DELETE:
 				getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
+				for(IKerKerInputFilter f : _filters)
+					f.onDelete();
 				break;
 			default:
 				if (getKeyboardManager().getCurrentKeyboard().isShifted())
-					getFrontend().sendKeyChar(Character.toUpperCase((char) primaryCode));
+					sendKeyChar(Character.toUpperCase((char) primaryCode));
 				else
-					getFrontend().sendKeyChar((char) primaryCode);
+					sendKeyChar((char) primaryCode);
 				break;
 			}
 		}
@@ -272,9 +390,9 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 				playAudioResource(R.raw.returnup);
 				break;
 			case ' ':
-				// playAudioResource(R.raw.spacedown);
-				// playAudioResource(R.raw.spaceup);
-				// break;
+				playAudioResource(R.raw.spacedown);
+				playAudioResource(R.raw.spaceup);
+				break;
 			default:
 				playAudioResource(R.raw.keydown);
 				playAudioResource(R.raw.keyup);
@@ -286,7 +404,10 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	}
 
 	public void onText(CharSequence text) {
-		_currentMethod.onTextEvent(text);
+		if (_currentMethod != null)
+			_currentMethod.onTextEvent(text);
+		else
+			commitText(text);
 	}
 	
 	public void swipeDown() {
@@ -332,7 +453,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		getConnection().setComposingText(buf, 1);
 	}
 	
-	public void showIMENamePopup(final String imeName) {
+	public void postShowPopup(final String imeName) {
 		_handler.postDelayed(new Runnable(){
 			public void run() {
 				try{
@@ -343,7 +464,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 					e.printStackTrace();
 				}
 			}
-		}, 400);
+		}, 1000);
 	}
 
 	public void showPopup(int resid)
@@ -394,10 +515,16 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	    	
 	    	_handler.postDelayed(new Runnable() {
 				public void run() {
-					if (_txtvMsg.getText() == msg.toString())
-						hidePopup();
+					try {
+						if (_txtvMsg.getText() == msg.toString())
+							hidePopup();						
+					}
+					catch(Exception ex)
+					{
+						
+					}
 				}
-	    	}, 700);
+	    	}, 1000);
 		}
 		catch(Exception e)
 		{
@@ -418,17 +545,50 @@ public class KerKerInputCore implements OnKeyboardActionListener {
     	{}
     }
 
+    public void sendKeyChar(char charCode) {
+    	switch (charCode) {
+        case '\n':
+        	getFrontend().sendKeyChar(charCode);
+            break;
+        default:
+            if (charCode >= '0' && charCode <= '9')
+            {
+            	getFrontend().sendKeyChar(charCode);
+            	runThroughFilters(Character.valueOf(charCode).toString());
+            }
+            else
+            	commitText(Character.valueOf(charCode).toString());
+            break;
+        }
+    }
 	public void commitText(CharSequence str) {
-		getConnection().commitText(str, 1);
+		str = runThroughFilters(str.toString());
 		hideCandidatesView();
+		if (str.toString().equalsIgnoreCase(""))
+		{
+			setCompositeBuffer("");
+			return;
+		}
+		getConnection().commitText(str, 1);
 	}
 
+	private String runThroughFilters(String str)
+	{
+		for(IKerKerInputFilter filter : _filters)
+		{
+			str = filter.onTextCommit(str.toString());
+			if (str == null || str.toString().equalsIgnoreCase(""))
+				return "";
+		}
+		return str;
+	}
+	
 	public void setShouldMakeNoise(Boolean shouldMakeNoise) {
 		this.shouldMakeNoise = shouldMakeNoise;
 		
 		if (shouldMakeNoise)
 		{
-			sndPool = new SoundPool(6, AudioManager.STREAM_SYSTEM, 0);
+			sndPool = new SoundPool(6, AudioManager.STREAM_RING, 0);
 			sndPoolMap = null;
 		}
 		else
@@ -487,7 +647,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		if (sndPool == null || sndPoolMap == null)
 			initSounds();
 		
-		int volume = ((AudioManager)getFrontend().getSystemService(Context.AUDIO_SERVICE)).getStreamVolume(AudioManager.STREAM_SYSTEM);
+		int volume = ((AudioManager)getFrontend().getSystemService(Context.AUDIO_SERVICE)).getStreamVolume(AudioManager.STREAM_RING);
 		Integer rid = sndPoolMap.get(resourceID);
 		if (rid != null)
 			sndPool.play(rid, volume, volume, 1, 0, 1f);
@@ -497,4 +657,6 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	{
 		_currentMode = mode;
 	}
+	
+	public Handler getHandler() { return _handler; }
 }

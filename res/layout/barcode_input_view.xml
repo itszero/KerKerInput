@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="fill_parent"
+             android:layout_height="200px"
+             android:background="#00000001">
+  <SurfaceView android:id="@+id/preview_view"
+               android:layout_width="fill_parent"
+               android:layout_height="200px"
+               />
+  <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="fill_parent"
+             android:layout_height="fill_parent"
+             android:background="#00000001"
+             android:id="@+id/finderLayout"
+             >
+		  <com.google.zxing.client.android.ViewfinderView
+		      xmlns:android="http://schemas.android.com/apk/res/android"
+		      android:id="@+id/viewfinder_view"
+		      android:layout_width="fill_parent"
+		      android:layout_height="200px"
+		      />
+		  <TextView
+		    android:text="請將條碼對準紅線位置"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_margin="2px"
+		    android:layout_gravity="bottom|left"
+		    android:textColor="#FFFFFFFF"
+		    android:background="#00000001"
+		    />
+		  <ImageButton android:id="@+id/btnNextIME"
+		    android:background="@drawable/candidate_feedback_background"
+		  	android:layout_width="60px"
+		  	android:layout_height="60px"
+		  	android:src="@drawable/globe"
+		  	/>
+  </FrameLayout>
+</FrameLayout>
+

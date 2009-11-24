@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  android:orientation="vertical"
+  android:background="#AA000000">
+  <TextView
+    android:text="選擇輸入法"
+    android:textSize="12pt"
+    android:textColor="#FFFFFFFF"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    />
+  <View
+    android:background="#FFFFFFFF"
+    android:layout_height="1px"
+    android:layout_width="fill_parent"
+    android:layout_margin="2px"
+  />
+  <ListView
+    android:id="@+id/lstIME"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:focusableInTouchMode="false"
+    android:choiceMode="singleChoice"
+    />
+</LinearLayout>
