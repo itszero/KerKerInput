@@ -1,12 +1,8 @@
 package idv.Zero.KerKerInput;
 
-import java.lang.reflect.Field;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import android.inputmethodservice.Keyboard.Row;
-import android.util.Log;
 import android.view.inputmethod.EditorInfo;
 
 public class Keyboard extends android.inputmethodservice.Keyboard {

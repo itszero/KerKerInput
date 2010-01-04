@@ -1,7 +1,6 @@
 package idv.Zero.KerKerInput;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.inputmethodservice.Keyboard.Key;
 import android.util.AttributeSet;
 

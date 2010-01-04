@@ -30,9 +30,6 @@ import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.WindowManager;
 
-import idv.Zero.KerKerInput.KerKerInputCore;
-import idv.Zero.KerKerInput.KerKerInputService;
-
 import java.io.IOException;
 
 /**

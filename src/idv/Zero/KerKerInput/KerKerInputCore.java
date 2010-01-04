@@ -85,15 +85,20 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		IKerKerInputFilter f;
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(_frontEnd);
 		
+		/**
+		 * FIXME: DYNAMIC LOAD MODULES
+		 * 
+		 *  I don't have any knowledge of methods to
+		 *  dynamically scan the installed packaged
+		 *  and get them instantiated here.
+		 *
+		 *  So, I'm going to include every package I
+		 *  need in the project and explicit load them.
+		 *  
+		 */
 		if (prefs.getBoolean("enable_bpmf", true))
 		{
 			m = new idv.Zero.KerKerInput.Methods.BPMFInput();
-			_methods.add(m);
-		}
-		
-		if (prefs.getBoolean("enable_noseeing", true))
-		{
-			m = new idv.Zero.KerKerInput.Methods.NoSeeing();
 			_methods.add(m);
 		}
 		
@@ -103,7 +108,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 			_methods.add(m);
 		}
 		
-		if (prefs.getBoolean("enable_barode", true))
+		if (prefs.getBoolean("enable_barcode", true))
 		{
 			m = new idv.Zero.KerKerInput.Methods.BarcodeInput();
 			_methods.add(m);
@@ -119,20 +124,6 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		if (prefs.getBoolean("enable_auto_expand", true))
 		{
 			f = new idv.Zero.KerKerInput.Filters.AutoExpandFilter();
-			f.onCreateFilter(this);
-			_filters.add(f);
-		}
-
-		if (prefs.getBoolean("enable_dice", true))
-		{
-			f = new idv.Zero.KerKerInput.Filters.DiceFilter();
-			f.onCreateFilter(this);
-			_filters.add(f);
-		}
-
-		if (prefs.getBoolean("enable_weather", true))
-		{
-			f = new idv.Zero.KerKerInput.Filters.WeatherFilter();
 			f.onCreateFilter(this);
 			_filters.add(f);
 		}
@@ -561,6 +552,7 @@ public class KerKerInputCore implements OnKeyboardActionListener {
             break;
         }
     }
+    
 	public void commitText(CharSequence str) {
 		str = runThroughFilters(str.toString());
 		hideCandidatesView();

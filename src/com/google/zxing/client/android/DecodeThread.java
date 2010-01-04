@@ -86,7 +86,6 @@ final class DecodeThread extends Thread {
     vector.addElement(BarcodeFormat.EAN_8);
     vector.addElement(BarcodeFormat.CODE_39);
     vector.addElement(BarcodeFormat.CODE_128);
-    vector.addElement(BarcodeFormat.ITF);
     vector.addElement(BarcodeFormat.QR_CODE);
     hints.put(DecodeHintType.POSSIBLE_FORMATS, vector);
     multiFormatReader.setHints(hints);
