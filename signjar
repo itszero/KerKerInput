@@ -1,0 +1,4 @@
+#!/bin/bash
+read -s -p 'Keystore Password: ' STOREPASS
+echo
+ant signjar -DSTOREPASS=$STOREPASS

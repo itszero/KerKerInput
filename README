@@ -37,6 +37,7 @@ Known Issues
     is not very smooth.
   - Camera only works on HTC phones for now. Need document for raw camera source
     data for phones from other manufactures. 
+  - Camera aspect is incorrect.
   - ... (a lot of bugs here.)
 
 License
