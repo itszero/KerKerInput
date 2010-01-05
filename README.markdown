@@ -23,6 +23,7 @@ project right now.
 Current WIP
 ==============
 Here are few things I am working on right now:
+
   - Documentation
   - Common .cin based input module
   - Cleanup dirty codes
@@ -33,6 +34,7 @@ email me the patch alone with your contact information for the credit. :)
   
 Known Issues
 =============
+
   - Some interaction during switching IME or re-open the IME on another textbox
     is not very smooth.
   - Camera only works on HTC phones for now. Need document for raw camera source
