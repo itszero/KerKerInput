@@ -33,6 +33,12 @@ import android.os.Handler;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 
+/**
+ * KerKerInputCore will load all of methods and filters, and
+ * it can handle the events of physical keyboard and virtual keyboard. 
+ *
+ * @see OnKeyboardActionListener
+ */
 public class KerKerInputCore implements OnKeyboardActionListener {
 	public enum InputMode { MODE_ABC, MODE_SYM, MODE_SYM_ALT, MODE_IME };
 	
@@ -151,6 +157,10 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		return _frontEnd.getCurrentInputConnection();
 	}
 	
+	/**
+	 * Change current input method to next one.
+	 * If there are no input method loaded, it will change to first one.
+	 */
 	public void requestNextInputMethod()
 	{
 		if (_currentMethod == null)
@@ -177,6 +187,12 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		}
 	}
 	
+	/**
+	 * This method will change current input method to what you give.
+	 * And it will initialize all thing about input method.
+	 * 
+	 * @param method the method which you want to set up
+	 */
 	public void setCurrentInputMethod(IKerKerInputMethod method)
 	{
 		if (_currentMethod != null)
@@ -204,7 +220,15 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		return _kbm;
 	}
 
-	// Physical Keyboard input
+	/**
+	 * Handle KeyDown event from physical Keyboard input.
+	 * Judging the pressed key and Choosing the solution. 
+	 * 
+	 * @param keyCode Unicode character of Key
+	 * @param e KeyEvent of the pressed key.  
+	 * @return <code>true</code> Finish operation.
+	 * 		   <code>false</code> Let system to handle the rest part.  
+	 */
 	public boolean onKeyDown(int keyCode, KeyEvent e)
 	{
 		// Allow user to user BACK key to hide SIP
@@ -415,20 +439,33 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 	public void commitCandidate(int selectedCandidate) {
 		_currentMethod.commitCandidate(selectedCandidate);
 	}
-
+	
+	/**
+	 * Set Candidates list
+	 * @param candidates
+	 */
 	public void setCandidates(List<CharSequence> candidates) {
 		_candidatesContainer.setCandidates(candidates);
 	}
 
+	/**
+	 * Create a new Candidates list to replace original one.
+	 */
 	public void clearCandidates() {
 		_candidatesContainer.setCandidates(new ArrayList<CharSequence>());
 	}
-
+	
+	/**
+	 * Show candidates view (placed above virtual keyboard, or in landscape, the bottom.)
+	 */
 	public void showCandidatesView() {
 		_frontEnd.setCandidatesViewShown(true);
 		_candidatesShown = true;
 	}
 	
+	/**
+	 * Hide & Clear CandidatesView
+	 */
 	public void hideCandidatesView() {
 		if (_currentMode != InputMode.MODE_IME)
 		{
@@ -440,10 +477,19 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 			clearCandidates();
 	}
 	
+	/**
+	 * @see InputConnection#setComposingText(CharSequence, int)
+	 * @param buf The composing text
+	 */
 	public void setCompositeBuffer(CharSequence buf) {
 		getConnection().setComposingText(buf, 1);
 	}
 	
+	/**
+	 * Shows a short-time popup window to notify users the name of IME
+	 * @see #showPopup
+	 * @param imeName the name of IME
+	 */
 	public void postShowPopup(final String imeName) {
 		_handler.postDelayed(new Runnable(){
 			public void run() {
@@ -457,12 +503,24 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 			}
 		}, 1000);
 	}
-
+	/**
+	 * Re-create popup window if _winMsg is null. Then,
+	 * change its contents to the message to notify users,
+	 * and hide it after one second.
+	 *
+	 * @param resid Resources ID
+	 */
 	public void showPopup(int resid)
 	{
 		showPopup(getFrontend().getResources().getString(resid));
 	}
-	
+	/**
+	 * Re-create popup window if _winMsg is null. Then,
+	 * change its contents to the message to notify users,
+	 * and hide it after one second.
+	 *
+	 * @param msg the string to display
+	 */
 	public void showPopup(final CharSequence msg)
     {
 		if (!_frontEnd.isInputViewShown() && !_candidatesShown)
@@ -525,7 +583,10 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 			_txtvMsg = null;
 		}
     }
-    
+	
+    /**
+     * @see PopupWindow#dismiss() 
+     */
     private void hidePopup()
     {
     	try
@@ -535,7 +596,12 @@ public class KerKerInputCore implements OnKeyboardActionListener {
     	catch(Exception e)
     	{}
     }
-
+    
+    /**
+     * Judging the sent charcode and Calling proper method 
+     * 
+     * @param charCode The Unicode character to send
+     */
     public void sendKeyChar(char charCode) {
     	switch (charCode) {
         case '\n':
@@ -552,7 +618,10 @@ public class KerKerInputCore implements OnKeyboardActionListener {
             break;
         }
     }
-    
+    /**
+     * Commit text to screen through filters
+     * @param str
+     */
 	public void commitText(CharSequence str) {
 		str = runThroughFilters(str.toString());
 		hideCandidatesView();
@@ -564,6 +633,13 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		getConnection().commitText(str, 1);
 	}
 
+	/**
+	 * Given string will run through filter to decide
+	 * its result(like expending or being deleted) 
+	 * 
+	 * @param str the string to filter 
+	 * @return the string after filtering
+	 */
 	private String runThroughFilters(String str)
 	{
 		for(IKerKerInputFilter filter : _filters)
@@ -575,6 +651,11 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		return str;
 	}
 	
+	/**
+	 * Create SoundPool if activate this function, or release all sound resources
+	 * 
+	 * @param shouldMakeNoise
+	 */
 	public void setShouldMakeNoise(Boolean shouldMakeNoise) {
 		this.shouldMakeNoise = shouldMakeNoise;
 		
@@ -634,6 +715,11 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 		}
 	}
 	
+	/**
+	 * Play Audio by the ID of resource. Initialize Audio resource if it didn't exist.
+	 * 
+	 * @param resourceID the audio resource id to play
+	 */
 	private void playAudioResource(final int resourceID)
 	{
 		if (sndPool == null || sndPoolMap == null)

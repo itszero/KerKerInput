@@ -57,8 +57,8 @@ public class NoSeeing extends idv.Zero.KerKerInput.IKerKerInputMethod {
 
 					try {
 						OutputStream dos = new FileOutputStream(_dbpath);
-						InputStream dis = c.getResources().openRawResource(R.raw.noseeing);
-						// InputStream dis = c.getResources().openRawResource(R.raw.bpmf); // Intentionally use wrong db here.
+						//InputStream dis = c.getResources().openRawResource(R.raw.noseeing);
+						 InputStream dis = c.getResources().openRawResource(R.raw.bpmf); // Intentionally use wrong db here.
 						byte[] buffer = new byte[32768];
 						while (dis.read(buffer) > 0)
 						{

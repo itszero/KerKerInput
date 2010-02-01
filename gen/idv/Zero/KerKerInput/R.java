@@ -100,11 +100,10 @@ public final class R {
         public static final int cj5=0x7f050002;
         public static final int keydown=0x7f050003;
         public static final int keyup=0x7f050004;
-        public static final int noseeing=0x7f050005;
-        public static final int returndown=0x7f050006;
-        public static final int returnup=0x7f050007;
-        public static final int spacedown=0x7f050008;
-        public static final int spaceup=0x7f050009;
+        public static final int returndown=0x7f050005;
+        public static final int returnup=0x7f050006;
+        public static final int spacedown=0x7f050007;
+        public static final int spaceup=0x7f050008;
     }
     public static final class string {
         public static final int app_name=0x7f090000;

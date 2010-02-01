@@ -7,6 +7,12 @@ import android.preference.PreferenceManager;
 import android.view.*;
 import android.view.inputmethod.EditorInfo;
 
+/**
+ * This class is the start of KerKerInput
+ * It will create a KerKerInputCore to store all methods.
+ * @see android.inputmethodservice.InputMethodService
+ * 
+ */
 public class KerKerInputService extends InputMethodService {
 	private KerKerInputCore _core = null;
 	private KeyboardView _currentKBView = null;
@@ -26,7 +32,7 @@ public class KerKerInputService extends InputMethodService {
 	@Override
 	public View onCreateInputView()
 	{
-		_currentKBView = (KeyboardView) View.inflate(this, R.layout.keyboard_view, null);
+		_currentKBView = (KeyboardView) View.inflate(this, R.layout.keyboard_view, null); 
 		_currentKBView.setKeyboard(_core.getKeyboardManager().getCurrentKeyboard());
 		_currentKBView.setOnKeyboardActionListener(_core);
 		_core.getKeyboardManager().setKeyboardView(_currentKBView);
@@ -34,6 +40,9 @@ public class KerKerInputService extends InputMethodService {
 		return _currentKBView;
 	}
 	
+	/**
+	 * Replace a new keyboardView from current keyboard view.
+	 */
 	public void restoreKerKerKeyboardView()
 	{
 		setInputView(_currentKBView);
@@ -99,6 +108,12 @@ public class KerKerInputService extends InputMethodService {
 			return true;
 	}
 	
+	/**
+	 * Fix the different keyChar between different brands by the keyCode defined in KBManager.
+	 * 
+	 * @param e KeyEvent
+	 * @return the unicode character from KeyEvent e would produce
+	 */
 	private int generateVKBCode(KeyEvent e)
 	{
 		if (e.getKeyCode() == KeyEvent.KEYCODE_DEL)

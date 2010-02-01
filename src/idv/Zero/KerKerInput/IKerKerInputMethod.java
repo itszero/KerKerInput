@@ -14,17 +14,43 @@ import android.view.View;
 public abstract class IKerKerInputMethod {
 	protected KerKerInputCore _core;
 	
-	/* Input Method Core */
+	/**
+	 * Initialize input method(like setting up variables or loading database)
+	 * 
+	 * @param core KerKerInputCore
+	 */
 	public void initInputMethod(KerKerInputCore core) { _core = core; }
+	
+	/**
+	 * preparing for the input method interface 
+	 */
 	abstract public void onEnterInputMethod();
+	
+	/**
+	 * Handling when input method lost focus
+	 */
 	public void onLostFocus()
 	{
 		_core.clearCandidates();
 		_core.hideCandidatesView();
 	}
+	
+	/**
+	 * clear up before leaving input method
+	 */
 	abstract public void onLeaveInputMethod();
+	
+	/**
+	 * 
+	 * @return the name of IME
+	 */
 	abstract public String getName();
+	
+	/**
+	 * Handle how to commit current composing buffer
+	 */
 	abstract public void commitCurrentComposingBuffer();
+	
 	public boolean shouldAvailableForSwitchingButton() { return true; }
 	public boolean hasCustomInputView() { return false; }
 	public View onCreateInputView() { return null; }

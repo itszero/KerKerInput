@@ -4,6 +4,12 @@ import idv.Zero.KerKerInput.KerKerInputCore.InputMode;
 import android.util.Log;
 import android.view.inputmethod.EditorInfo;
 
+
+/**
+ * This Class provided some defined KeyCodes to clarify.
+ * And some methods to manage KeyBoard.
+ * 
+ */
 public class KBManager {
 	public static final int KEYCODE_SYM = -100;
 	public static final int KEYCODE_SYM_ALT = -101;
@@ -29,12 +35,20 @@ public class KBManager {
 		_core = core;
 	}
 
+	/**
+	 *  current KeyboardView and reset a new one. 
+	 */
 	public void resetKeyboard()
 	{
 		_currentKB = null;
 		getCurrentKeyboard();
 	}
 	
+	/**
+	 * set current KeyboardView to a new one
+	 * 
+	 * @param kv the KeyboardView to set
+	 */
 	public void setKeyboardView(KeyboardView kv)
 	{
 		Log.i("KBManager", "setKeyboardView = " + kv);
@@ -57,6 +71,11 @@ public class KBManager {
 	
 	public enum NativeKeyboardTypes {MODE_ABC, MODE_SYM, MODE_SYM_ALT, MODE_IME};
 	
+	/**
+	 * Load given type of KeyboardView from resources.
+	 * 
+	 * @param type the type of Keyboard 
+	 */
 	public void setNativeKeyboard(NativeKeyboardTypes type)
 	{
 		_currentKBType = type;
@@ -77,7 +96,7 @@ public class KBManager {
 		}
 	}
 	
-	public void setCurrentKeyboardFromResource(int kbResource, int mode)
+	private void setCurrentKeyboardFromResource(int kbResource, int mode)
 	{
 		setCurrentKeyboard(new Keyboard(_core.getFrontend(), kbResource, mode));
 	}
@@ -97,6 +116,10 @@ public class KBManager {
 		}
 	}
 	
+	/**
+	 * Change Keyboard Mode and update Keyboard
+	 * @param kbmode 
+	 */
 	public void setKeyboardMode(int kbmode)
 	{
 		_kbMode = kbmode;
@@ -108,6 +131,11 @@ public class KBManager {
 		return _kbMode;
 	}
 
+	/**
+	 * 
+	 * @see EditorInfo#imeOptions
+	 * @param inputType
+	 */
 	public void setImeOptions(int inputType)
 	{
 		imeOptions = inputType;
