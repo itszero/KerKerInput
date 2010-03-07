@@ -11,7 +11,7 @@
         <Key android:codes="119" android:keyLabel="田"/>
         <Key android:codes="101" android:keyLabel="水"/>
         <Key android:codes="114" android:keyLabel="口"/>
-        <Key android:codes="116" android:keyLabel="甘"/>
+        <Key android:codes="116" android:keyLabel="廿"/>
         <Key android:codes="121" android:keyLabel="卜"/>
         <Key android:codes="117" android:keyLabel="山"/>
         <Key android:codes="105" android:keyLabel="戈"/>
@@ -20,7 +20,7 @@
     </Row>
     
     <Row>
-        <Key android:codes="97" android:keyLabel="田" android:horizontalGap="5%p" android:keyEdgeFlags="left"/>
+        <Key android:codes="97" android:keyLabel="日" android:horizontalGap="5%p" android:keyEdgeFlags="left"/>
         <Key android:codes="115" android:keyLabel="尸"/>
         <Key android:codes="100" android:keyLabel="木"/>
         <Key android:codes="102" android:keyLabel="火"/>
