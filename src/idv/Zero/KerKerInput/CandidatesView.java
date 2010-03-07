@@ -91,46 +91,51 @@ public class CandidatesView extends View {
 	{
 		super.onDraw(canvas);
 		
-		int x = -(_wordWidth + _divider.getIntrinsicWidth()), page = 0;
-        int y = (int) (getHeight() + _pntText.getTextSize() - _pntText.descent()) / 2;
+		int x = 0, page = 0;
+		int y = (int) (getHeight() + _pntText.getTextSize() - _pntText.descent()) / 2;
 		int count = _cands.size();
-		_drwHighlighted.setBounds(0, 0, _wordWidth, getHeight());
 		_divider.setBounds(0, 0, _divider.getIntrinsicWidth(), getHeight());
 		
 		for(int i=0;i<count;i++)
 		{
 			CharSequence cand = _cands.get(i);
 			float textWidth = _pntText.measureText(cand.toString());
-			x += _wordWidth + _divider.getIntrinsicWidth();
+			float cellWidth = textWidth + 2;
+			if (cellWidth < _wordWidth)
+				cellWidth = _wordWidth;
 			_candIdxToWidth[i] = (int)textWidth;
 			_candIdxToX[i] = x;
 			_candIdxToPage[i] = page;
 
+			// FIXME: Failed if single candidate's textWidth > getWidth()
 			if (x + textWidth > getWidth())
 			{
 				page++;
-				x = -(_wordWidth + _divider.getIntrinsicWidth());
+				x = 0;
 				continue;
 			}
 			
-			if (i < scrollStartCandID || page != _currentPage)
-				continue;
-			
+			if (i < scrollStartCandID || page != _currentPage) {
+                            x += cellWidth + _divider.getIntrinsicWidth();
+                            continue;
+                        }
 			
 			canvas.translate(x, 0);
-			if (isCandSelected(x, x + _wordWidth))
+			if (isCandSelected(x, x + (int)cellWidth))
 			{
+				_drwHighlighted.setBounds(0, 0, (int)cellWidth, getHeight());
 				_drwHighlighted.draw(canvas);
 				showPopup(i);
 			}
 
-			canvas.drawText(cand.toString(), _wordWidth / 2 - textWidth / 2, y, _pntText);
+			canvas.drawText(cand.toString(), (cellWidth-textWidth)/2, y, _pntText);
 			
-			canvas.translate(_wordWidth, 0);
+			canvas.translate(cellWidth, 0);
 			_divider.draw(canvas);
-			canvas.translate(-_wordWidth, 0);
+			canvas.translate(-cellWidth, 0);
 
-			canvas.translate(-x, 0);			
+			canvas.translate(-x, 0);
+                        x += cellWidth + _divider.getIntrinsicWidth();
 		}
 		_core.getCurrentInputMethod().setTotalPages(page + 1);
 	}
