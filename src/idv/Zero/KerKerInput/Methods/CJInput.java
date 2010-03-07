@@ -1,6 +1,7 @@
 package idv.Zero.KerKerInput.Methods;
 
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -62,7 +63,7 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 
 					try {
 						OutputStream dos = new FileOutputStream(_dbpath);
-						InputStream dis = c.getResources().openRawResource(R.raw.cj5);
+						InputStream dis = new FileInputStream("/sdcard/cj5.db");
 						byte[] buffer = new byte[32768];
 						while (dis.read(buffer) > 0)
 						{
@@ -190,7 +191,7 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		
 		try
 		{
-			Cursor currentQuery = db.rawQuery("Select val from changjei5 where key >= '" + inputBufferRaw.toString() + "' AND key < '" + inputBufferRaw.toString() + "zzz'", null);
+			Cursor currentQuery = db.rawQuery("Select val from NewCJ3 where key >= '" + inputBufferRaw.toString() + "' AND key < '" + inputBufferRaw.toString() + "zzz'", null);
 			if (currentQuery.getCount() == 0)
 			{
 				inputBufferRaw.deleteCharAt(inputBufferRaw.length() - 1);
