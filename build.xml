@@ -64,6 +64,27 @@
     -->
     <setup />
 
+    <!-- Override original Android's compile task to use UTF-8 encoding -->
+    <target name="compile" depends="-resource-src, -aidl"
+                description="Compiles project's .java files into .class files">
+        <!-- If android rules are used for a test project, its classpath should include
+             tested project's location -->
+        <condition property="extensible.classpath"
+                           value="${tested.project.absolute.dir}/bin/classes" else=".">
+            <isset property="tested.project.absolute.dir" />
+        </condition>
+        <javac encoding="utf-8" target="1.5" debug="true" extdirs=""
+                destdir="${out.classes.absolute.dir}"
+                bootclasspathref="android.target.classpath"
+                verbose="${verbose}" classpath="${extensible.classpath}">
+            <src path="${source.absolute.dir}" />
+            <src path="${gen.absolute.dir}" />
+            <classpath>
+                <fileset dir="${external.libs.absolute.dir}" includes="*.jar" />
+            </classpath>
+        </javac>
+    </target>
+
     <target name="signjar">
       	<signjar jar="bin/KerKerInput-unsigned.apk" signedjar="bin/KerKerInput-Release.apk" alias="kki_release" keystore="release.key" storepass="${STOREPASS}" />
     </target>
