@@ -85,7 +85,7 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	
 	public void onEnterInputMethod()
 	{
-		if (!copying)
+		if (!copying && !db.isOpen())
 		{
 			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 			db.setLocale(Locale.TRADITIONAL_CHINESE);
@@ -97,7 +97,7 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	
 	public void onLeaveInputMethod()
 	{
-		if (db != null)
+		if (db != null && db.isOpen())
 			db.close();
 	}
 	
@@ -185,10 +185,10 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		
 		if (db == null)
 			return;
-		
+		Cursor currentQuery = null;
 		try
 		{
-			Cursor currentQuery = db.rawQuery("Select val from changjei5 where key >= '" + inputBufferRaw.toString() + "' AND key < '" + inputBufferRaw.toString() + "zzz'", null);
+			currentQuery = db.rawQuery("Select val from changjei5 where key >= '" + inputBufferRaw.toString() + "' AND key < '" + inputBufferRaw.toString() + "zzz'", null);
 			if (currentQuery.getCount() == 0)
 			{
 				inputBufferRaw.deleteCharAt(inputBufferRaw.length() - 1);
@@ -220,6 +220,8 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		catch(Exception e) {}
 		finally
 		{
+                    if (currentQuery != null)
+                        currentQuery.close();
 		}
 	}
 
