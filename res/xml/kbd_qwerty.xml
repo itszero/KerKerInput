@@ -62,9 +62,10 @@
         <Key android:codes="98" android:keyLabel="b"/>
         <Key android:codes="110" android:keyLabel="n"/>
         <Key android:codes="109" android:keyLabel="m"/>
-        <Key android:codes="-104" android:keyIcon="@drawable/globe"
-        		android:iconPreview="@drawable/globe_feedback"
-                android:keyWidth="15%p" android:keyEdgeFlags="right"/>
+        <Key android:codes="-5" android:keyIcon="@drawable/sym_keyboard_delete" 
+                android:keyWidth="15%p" android:keyEdgeFlags="right" 
+                android:iconPreview="@drawable/sym_keyboard_feedback_delete"
+                android:isRepeatable="true"/>
     </Row>
 
     <Row android:keyboardMode="@+id/mode_normal" android:rowEdgeFlags="bottom">
@@ -78,10 +79,9 @@
         <Key android:codes="10" android:keyIcon="@drawable/sym_keyboard_return" 
                 android:iconPreview="@drawable/sym_keyboard_feedback_return"
                 android:keyWidth="15%p" android:keyEdgeFlags="right"/>
-        <Key android:codes="-5" android:keyIcon="@drawable/sym_keyboard_delete" 
-                android:keyWidth="15%p" android:keyEdgeFlags="right" 
-                android:iconPreview="@drawable/sym_keyboard_feedback_delete"
-                android:isRepeatable="true"/>
+        <Key android:codes="-104" android:keyIcon="@drawable/globe"
+        		android:iconPreview="@drawable/globe_feedback"
+                android:keyWidth="15%p" android:keyEdgeFlags="right"/>
     </Row>
 
     <Row android:keyboardMode="@+id/mode_url" android:rowEdgeFlags="bottom">
