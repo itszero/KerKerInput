@@ -27,6 +27,7 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private HashMap<CharSequence, CharSequence> keyNames;
 	private SQLiteDatabase db;
 	private boolean copying = false;
+        private String _name;
 	
 	public void initInputMethod(KerKerInputCore core) {
 		super.initInputMethod(core);
@@ -35,7 +36,8 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		_currentCandidates = new ArrayList<CharSequence>();
 
 		final Context c = core.getFrontend();
-		
+
+                _name = c.getString(R.string.changjei5);
 		_dbpath = c.getDatabasePath("cj5.db").toString();
 		keyNames = new HashMap<CharSequence, CharSequence>();
 
@@ -103,7 +105,7 @@ public class CJInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	
 	public String getName()
 	{
-		return "倉頡五代";
+		return _name;
 	}
 
 	public Keyboard getDesiredKeyboard() {
