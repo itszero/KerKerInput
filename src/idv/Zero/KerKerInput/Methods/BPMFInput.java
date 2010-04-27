@@ -214,6 +214,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private void updateCandidates() {
 		if (inputBufferRaw.length() == 0)
 		{
+			// bz: fixme: mod here
 			_currentCandidates.clear();
 			_core.hideCandidatesView();
 			return;
@@ -222,7 +223,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		try
 		{
 			// Cursor currentQuery = db.rawQuery("Select val from bpmf where key glob '" + inputBufferRaw.toString() + "*'", null);
-			Cursor currentQuery = db.rawQuery("Select val from bpmf where key >= '" + inputBufferRaw.toString() + "' AND key < '" + inputBufferRaw.toString() + "zzz'", null);
+			Cursor currentQuery = db.rawQuery("Select val from bpmf where key >= '" + inputBufferRaw.toString() + "' AND key < '" + inputBufferRaw.toString() + "zzz' ORDER BY cnt DESC", null);
 			if (currentQuery.getCount() == 0)
 			{
 				inputBufferRaw = inputBufferRaw.substring(0, inputBufferRaw.length() - 1);
@@ -240,11 +241,17 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				_currentCandidates = new ArrayList<CharSequence>(count);
 				
 				currentQuery.moveToNext();
+				String last_ca = "";
 				for(int i=0;i<count;i++)
 				{
-					String ca = currentQuery.getString(colIdx);
-					_currentCandidates.add(ca);
+			 		String ca = currentQuery.getString(colIdx);
+					// bz: list are sorted by sqlite3, skip repeating word(s)
+					if (ca != last_ca)
+					{
+						_currentCandidates.add(ca);
+					}
 					currentQuery.moveToNext();
+					last_ca = ca;
 				}
 				_core.showCandidatesView();
 				_core.setCandidates(_currentCandidates);
