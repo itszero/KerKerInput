@@ -107,7 +107,11 @@ public class KerKerInputCore implements OnKeyboardActionListener {
 			m = new idv.Zero.KerKerInput.Methods.BPMFInput();
 			_methods.add(m);
 		}
-		
+		else if (prefs.getBoolean("enable_pinyin", true))
+		{
+			m = new idv.Zero.KerKerInput.Methods.PINYINInput();
+			_methods.add(m);
+		}
 		if (prefs.getBoolean("enable_cj5", false))
 		{
 			m = new idv.Zero.KerKerInput.Methods.CJInput();

@@ -100,14 +100,16 @@ public final class R {
         public static final int cj5=0x7f050002;
         public static final int keydown=0x7f050003;
         public static final int keyup=0x7f050004;
-        public static final int returndown=0x7f050005;
-        public static final int returnup=0x7f050006;
-        public static final int spacedown=0x7f050007;
-        public static final int spaceup=0x7f050008;
+        public static final int ncj3=0x7f050005;
+        public static final int returndown=0x7f050006;
+        public static final int returnup=0x7f050007;
+        public static final int spacedown=0x7f050008;
+        public static final int spaceup=0x7f050009;
     }
     public static final class string {
         public static final int app_name=0x7f090000;
         public static final int cancel=0x7f090002;
+        public static final int changjei5=0x7f090007;
         public static final int download=0x7f090003;
         public static final int label_abc_key=0x7f090005;
         public static final int label_symbol_key=0x7f090004;
@@ -118,14 +120,15 @@ public final class R {
         public static final int global_settings=0x7f040000;
         public static final int kb_cj=0x7f040001;
         public static final int kb_noseeing=0x7f040002;
-        public static final int kb_zhuyin=0x7f040003;
-        public static final int kbd_popup_template=0x7f040004;
-        public static final int kbd_qwerty=0x7f040005;
-        public static final int kbd_sym=0x7f040006;
-        public static final int kbd_sym_alt=0x7f040007;
-        public static final int method=0x7f040008;
-        public static final int popup_domains=0x7f040009;
-        public static final int popup_punctuation=0x7f04000a;
-        public static final int popup_smileys=0x7f04000b;
+        public static final int kb_pinyin=0x7f040003;
+        public static final int kb_zhuyin=0x7f040004;
+        public static final int kbd_popup_template=0x7f040005;
+        public static final int kbd_qwerty=0x7f040006;
+        public static final int kbd_sym=0x7f040007;
+        public static final int kbd_sym_alt=0x7f040008;
+        public static final int method=0x7f040009;
+        public static final int popup_domains=0x7f04000a;
+        public static final int popup_punctuation=0x7f04000b;
+        public static final int popup_smileys=0x7f04000c;
     }
 }
