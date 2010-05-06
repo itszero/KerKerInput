@@ -43,10 +43,9 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		_currentCandidates = new ArrayList<CharSequence>();
 
 		Context c = core.getFrontend();
-		Context c2 = core.getFrontend();
 		
 		_dbpath = c.getDatabasePath("cin.db").toString();
-		_wordCompDBPath = c2.getDatabasePath("word_complete.db").toString();
+		_wordCompDBPath = c.getDatabasePath("wc.db").toString();
 
 		_lastInput = "";
 
@@ -55,10 +54,6 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 			db.setLocale(Locale.TRADITIONAL_CHINESE);
 			db.close();
-
-			wordCompDB = SQLiteDatabase.openDatabase(_wordCompDBPath, null, SQLiteDatabase.OPEN_READONLY);
-			wordCompDB.setLocale(Locale.TRADITIONAL_CHINESE);
-			wordCompDB.close();
 		}
 		catch(SQLiteException ex)
 		{
@@ -81,8 +76,52 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				dis.close();				
 			} catch (IOException e) {
 				e.printStackTrace();
+				Log.e("BPMFInput", "excepted1: " + e.getMessage());
 			}			
 		}
+
+		try
+		{
+			wordCompDB = SQLiteDatabase.openDatabase(_wordCompDBPath, null, SQLiteDatabase.OPEN_READONLY);
+			wordCompDB.setLocale(Locale.TRADITIONAL_CHINESE);
+			wordCompDB.close();
+		}
+		catch(SQLiteException ex)
+		{
+			System.out.println("Error, no database file found. Copying...");
+
+			// Create the database (and the directories required) then close it.
+			wordCompDB = c.openOrCreateDatabase("wc.db", 0, null);
+			wordCompDB.close();
+
+			try {
+				Log.e("BPMFInput", "1");
+				OutputStream dos = new FileOutputStream(_wordCompDBPath);
+				Log.e("BPMFInput", "2");
+				InputStream dis = c.getResources().openRawResource(R.raw.wordcomplete);
+				Log.e("BPMFInput", "avl: " + dis.available());
+				Log.e("BPMFInput", "3");
+				byte[] buffer = new byte[4096];
+				Log.e("BPMFInput", "4");
+				while (dis.read(buffer) > 0)
+				{
+					Log.e("BPMFInput", "x");
+					dos.write(buffer);
+				}
+				Log.e("BPMFInput", "5");
+				dos.flush();
+				Log.e("BPMFInput", "6");
+				dos.close();
+				Log.e("BPMFInput", "7");
+				dis.close();				
+				Log.e("BPMFInput", "8");
+			} catch (IOException e) {
+				Log.e("BPMFInput", "excepted2: " + e.getMessage());
+				e.printStackTrace();
+			}			
+		}
+
+
 	}
 	
 	public void onEnterInputMethod()
@@ -93,11 +132,18 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		// Copied, re-open it.
 		db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 		db.setLocale(Locale.TRADITIONAL_CHINESE);
+
+		Log.e("BPMFInput", "pre-open");
+		wordCompDB = SQLiteDatabase.openDatabase(_wordCompDBPath, null, SQLiteDatabase.OPEN_READONLY);
+		Log.e("BPMFInput", "in-open");
+		wordCompDB.setLocale(Locale.TRADITIONAL_CHINESE);
+		Log.e("BPMFInput", "post-open");
 	}
 	
 	public void onLeaveInputMethod()
 	{
 		db.close();
+		wordCompDB.close();
 	}
 	
 	public String getName()
@@ -272,9 +318,8 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				try 
 				{
 					Log.e("BPMFInput", "before query");
-					Log.e("BPMFInput", "Select val from word_complete where key = '" + _lastInput + "' ORDER BY cnt DESC");
 	//				Cursor currentQuery = wordCompDB.rawQuery("Select val from word_complete where key = '麻' ORDER BY cnt DESC", null);
-					Cursor currentQuery = wordCompDB.rawQuery("Select val from word_complete where key >= '三'", null);
+					Cursor currentQuery = wordCompDB.rawQuery("select val from word_complete where key = '三'", null);
 					//ssssss
 					Log.e("BPMFInput", "after query");
 					int count = currentQuery.getCount();
