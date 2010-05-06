@@ -28,12 +28,15 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private HashMap<Character, String> K2N;
 	private String _dbpath;
 	private String _wordCompDBPath;
+	private String _phraseCompDBPath;
 	private String _lastInput;
+	private String _lastLastInput;
 	private int _currentPage;
 	private int _totalPages;
 	
 	private SQLiteDatabase db;
 	private SQLiteDatabase wordCompDB;
+	private SQLiteDatabase phraseCompDB;
 	
 	public void initInputMethod(KerKerInputCore core) {
 		super.initInputMethod(core);
@@ -46,8 +49,10 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		
 		_dbpath = c.getDatabasePath("cin.db").toString();
 		_wordCompDBPath = c.getDatabasePath("wc.db").toString();
+		_phraseCompDBPath = c.getDatabasePath("pc.db").toString();
 
 		_lastInput = "";
+		_lastLastInput = "";
 
 		try
 		{
@@ -109,6 +114,36 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				e.printStackTrace();
 			}			
 		}
+		try
+		{
+			phraseCompDB = SQLiteDatabase.openDatabase(_phraseCompDBPath, null, SQLiteDatabase.OPEN_READONLY);
+			phraseCompDB.setLocale(Locale.TRADITIONAL_CHINESE);
+			phraseCompDB.close();
+		}
+		catch(SQLiteException ex)
+		{
+			System.out.println("Error, no database file found. Copying...");
+
+			// Create the database (and the directories required) then close it.
+			phraseCompDB = c.openOrCreateDatabase("pc.db", 0, null);
+			phraseCompDB.close();
+
+			try {
+				OutputStream dos = new FileOutputStream(_phraseCompDBPath);
+				InputStream dis = c.getResources().openRawResource(R.raw.phrasecomplete);
+				int size = dis.available();
+				byte[] buffer = new byte[size];
+				dis.read(buffer);
+				dos.write(buffer);
+				dos.flush();
+				dos.close();
+				dis.close();				
+				Log.e("BPMFInput", "copy3 done");
+			} catch (IOException e) {
+				Log.e("BPMFInput", "excepted3: " + e.getMessage());
+				e.printStackTrace();
+			}			
+		}
 
 
 	}
@@ -121,18 +156,22 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		// Copied, re-open it.
 		db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 		db.setLocale(Locale.TRADITIONAL_CHINESE);
+		Log.e("BPMFInput", "open1 done");
 
-		Log.e("BPMFInput", "pre-open");
 		wordCompDB = SQLiteDatabase.openDatabase(_wordCompDBPath, null, SQLiteDatabase.OPEN_READONLY);
-		Log.e("BPMFInput", "in-open");
 		wordCompDB.setLocale(Locale.TRADITIONAL_CHINESE);
-		Log.e("BPMFInput", "post-open");
+		Log.e("BPMFInput", "open2 done");
+
+		phraseCompDB = SQLiteDatabase.openDatabase(_phraseCompDBPath, null, SQLiteDatabase.OPEN_READONLY);
+		phraseCompDB.setLocale(Locale.TRADITIONAL_CHINESE);
+		Log.e("BPMFInput", "open3 done");
 	}
 	
 	public void onLeaveInputMethod()
 	{
 		db.close();
 		wordCompDB.close();
+		phraseCompDB.close();
 	}
 	
 	public String getName()
@@ -153,6 +192,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	}
 	
 	private boolean handleBPMFKeyEvent(int keyCode, int[] keyCodes) {
+		Log.e("BPMFInput", "here in handle BPMF Key EVent");
 		if (currentState == InputState.STATE_INPUT || currentState == InputState.STATE_SUGGEST)
 		{
 			if (keyCode == Keyboard.KEYCODE_DELETE)
@@ -316,10 +356,30 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 						_currentCandidates.add(ca);
 						currentQuery.moveToNext();
 					}
+					currentQuery.close();
+
+					Log.e("BPMFInput", "to be in phrase complete");
+					if(!(_lastInput.equals("") || _lastLastInput.equals("")))
+					{
+						Log.e("BPMFInput", "in phrase complete");
+						currentQuery = phraseCompDB.rawQuery("Select val from word_complete where key = '" + _lastLastInput + _lastInput + "' ORDER BY cnt DESC", null);
+						count = currentQuery.getCount();
+						colIdx = currentQuery.getColumnIndex("val");
+						_currentCandidates = new ArrayList<CharSequence>(count);
+						
+						currentQuery.moveToNext();
+						for(int i=0;i<count;i++)
+						{
+							String ca = currentQuery.getString(colIdx);
+							_currentCandidates.add(ca);
+							currentQuery.moveToNext();
+						}
+						currentQuery.close();
+					}
+
 					_core.showCandidatesView();
 					_core.setCandidates(_currentCandidates);
 					_lastInput = "";
-					currentQuery.close();
 				}
 				catch(Exception e) 
 				{
@@ -397,6 +457,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private void commitText(CharSequence str)
 	{
 		_core.commitText(str);
+		_lastLastInput = _lastInput;
 		_lastInput = str.toString();
 		inputBufferRaw = "";
 		updateCandidates();
