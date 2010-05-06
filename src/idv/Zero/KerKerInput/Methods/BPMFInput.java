@@ -246,7 +246,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				{
 			 		String ca = currentQuery.getString(colIdx);
 					// bz: list are sorted by sqlite3, skip repeating word(s)
-					if (ca != last_ca)
+					if ( !ca.equals(last_ca) )
 					{
 						_currentCandidates.add(ca);
 					}
