@@ -95,26 +95,15 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			wordCompDB.close();
 
 			try {
-				Log.e("BPMFInput", "1");
 				OutputStream dos = new FileOutputStream(_wordCompDBPath);
-				Log.e("BPMFInput", "2");
 				InputStream dis = c.getResources().openRawResource(R.raw.wordcomplete);
-				Log.e("BPMFInput", "avl: " + dis.available());
-				Log.e("BPMFInput", "3");
-				byte[] buffer = new byte[4096];
-				Log.e("BPMFInput", "4");
-				while (dis.read(buffer) > 0)
-				{
-					Log.e("BPMFInput", "x");
-					dos.write(buffer);
-				}
-				Log.e("BPMFInput", "5");
+				int size = dis.available();
+				byte[] buffer = new byte[size];
+				dis.read(buffer);
+				dos.write(buffer);
 				dos.flush();
-				Log.e("BPMFInput", "6");
 				dos.close();
-				Log.e("BPMFInput", "7");
 				dis.close();				
-				Log.e("BPMFInput", "8");
 			} catch (IOException e) {
 				Log.e("BPMFInput", "excepted2: " + e.getMessage());
 				e.printStackTrace();
@@ -306,8 +295,6 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private void updateCandidates() {
 		if (inputBufferRaw.length() == 0)
 		{
-			// bz: fixme: mod here
-			// use last input to find (sqlite) suggestion candidates
 			_currentCandidates.clear();
 			if (_lastInput.equals(""))
 			{
@@ -317,15 +304,10 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			{
 				try 
 				{
-					Log.e("BPMFInput", "before query");
-	//				Cursor currentQuery = wordCompDB.rawQuery("Select val from word_complete where key = '麻' ORDER BY cnt DESC", null);
-					Cursor currentQuery = wordCompDB.rawQuery("select val from word_complete where key = '三'", null);
-					//ssssss
-					Log.e("BPMFInput", "after query");
+					Cursor currentQuery = wordCompDB.rawQuery("Select val from word_complete where key = '" + _lastInput + "' ORDER BY cnt DESC", null);
 					int count = currentQuery.getCount();
 					int colIdx = currentQuery.getColumnIndex("val");
 					_currentCandidates = new ArrayList<CharSequence>(count);
-					_currentCandidates.add(_lastInput);
 					
 					currentQuery.moveToNext();
 					for(int i=0;i<count;i++)
@@ -338,11 +320,10 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 					_core.setCandidates(_currentCandidates);
 					_lastInput = "";
 					currentQuery.close();
-					//eeeeee
 				}
 				catch(Exception e) 
 				{
-					Log.e("BPMFInput", "AAA" + e.getMessage());
+					Log.e("BPMFInput", "" + e.getMessage());
 				}
 				finally {}
 			}
