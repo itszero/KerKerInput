@@ -21,16 +21,19 @@ import idv.Zero.KerKerInput.R;
 import idv.Zero.KerKerInput.Methods.BPMFInputHelpers.ZhuYinComponentHelper;
 
 public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
-	private enum InputState {STATE_INPUT, STATE_CHOOSE};
+	private enum InputState {STATE_INPUT, STATE_CHOOSE, STATE_SUGGEST};
 	private InputState currentState;
 	private String inputBufferRaw = "";
 	private List<CharSequence> _currentCandidates;
 	private HashMap<Character, String> K2N;
 	private String _dbpath;
+	private String _wordCompDBPath;
+	private String _lastInput;
 	private int _currentPage;
 	private int _totalPages;
 	
 	private SQLiteDatabase db;
+	private SQLiteDatabase wordCompDB;
 	
 	public void initInputMethod(KerKerInputCore core) {
 		super.initInputMethod(core);
@@ -40,14 +43,22 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		_currentCandidates = new ArrayList<CharSequence>();
 
 		Context c = core.getFrontend();
+		Context c2 = core.getFrontend();
 		
 		_dbpath = c.getDatabasePath("cin.db").toString();
+		_wordCompDBPath = c2.getDatabasePath("word_complete.db").toString();
+
+		_lastInput = "";
 
 		try
 		{
 			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 			db.setLocale(Locale.TRADITIONAL_CHINESE);
 			db.close();
+
+			wordCompDB = SQLiteDatabase.openDatabase(_wordCompDBPath, null, SQLiteDatabase.OPEN_READONLY);
+			wordCompDB.setLocale(Locale.TRADITIONAL_CHINESE);
+			wordCompDB.close();
 		}
 		catch(SQLiteException ex)
 		{
@@ -107,7 +118,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	}
 	
 	private boolean handleBPMFKeyEvent(int keyCode, int[] keyCodes) {
-		if (currentState == InputState.STATE_INPUT)
+		if (currentState == InputState.STATE_INPUT || currentState == InputState.STATE_SUGGEST)
 		{
 			if (keyCode == Keyboard.KEYCODE_DELETE)
 			{
@@ -147,7 +158,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			_core.setCompositeBuffer(getCompositeString());
 			updateCandidates();
 		}
-		else if (currentState == InputState.STATE_CHOOSE)
+		if (currentState == InputState.STATE_CHOOSE)
 		{
 			switch (keyCode)
 			{
@@ -164,6 +175,41 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				
 				break;
 			// TODO: Make sure DPad & Keyboard L/R keyCode
+			case -103: // DPad Left
+				if (_currentPage > 0)
+					_currentPage--;
+				else
+					_currentPage = _totalPages - 1;
+				break;
+			case -104: // DPad Right
+				if (_currentPage < _totalPages - 1)
+					_currentPage++;
+				else
+					_currentPage = 0;
+				break;
+			case ' ':
+			case 10:
+				keyCode = KeyEvent.KEYCODE_0;
+			default:
+				if (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9)
+				{
+				    // This prevents user hit tone symbol twice makes program crash.
+				    // It's because first sign interpreted as bpmf symbol, and second one is treated as candidate choose.
+				    // Also prevent user select non-exist candidates on physical kb.
+					if (_totalPages < 0) break;
+					
+					int CANDIDATES_PER_PAGE = (_currentCandidates.size() / _totalPages);
+				    if ((_currentPage * CANDIDATES_PER_PAGE + keyCode - KeyEvent.KEYCODE_0 - 1) < _currentCandidates.size())
+				    {
+				        commitCandidate(_currentPage * CANDIDATES_PER_PAGE + keyCode - KeyEvent.KEYCODE_0 - 1);
+				    }
+				}
+				break;
+			}
+		}
+		else if (currentState == InputState.STATE_SUGGEST) {
+			switch (keyCode)
+			{
 			case -103: // DPad Left
 				if (_currentPage > 0)
 					_currentPage--;
@@ -215,8 +261,46 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		if (inputBufferRaw.length() == 0)
 		{
 			// bz: fixme: mod here
+			// use last input to find (sqlite) suggestion candidates
 			_currentCandidates.clear();
-			_core.hideCandidatesView();
+			if (_lastInput.equals(""))
+			{
+				_core.hideCandidatesView();
+			}
+			else 
+			{
+				try 
+				{
+					Log.e("BPMFInput", "before query");
+					Log.e("BPMFInput", "Select val from word_complete where key = '" + _lastInput + "' ORDER BY cnt DESC");
+	//				Cursor currentQuery = wordCompDB.rawQuery("Select val from word_complete where key = '麻' ORDER BY cnt DESC", null);
+					Cursor currentQuery = wordCompDB.rawQuery("Select val from word_complete where key >= '三'", null);
+					//ssssss
+					Log.e("BPMFInput", "after query");
+					int count = currentQuery.getCount();
+					int colIdx = currentQuery.getColumnIndex("val");
+					_currentCandidates = new ArrayList<CharSequence>(count);
+					_currentCandidates.add(_lastInput);
+					
+					currentQuery.moveToNext();
+					for(int i=0;i<count;i++)
+					{
+						String ca = currentQuery.getString(colIdx);
+						_currentCandidates.add(ca);
+						currentQuery.moveToNext();
+					}
+					_core.showCandidatesView();
+					_core.setCandidates(_currentCandidates);
+					_lastInput = "";
+					currentQuery.close();
+					//eeeeee
+				}
+				catch(Exception e) 
+				{
+					Log.e("BPMFInput", "AAA" + e.getMessage());
+				}
+				finally {}
+			}
 			return;
 		}
 		
@@ -241,17 +325,17 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				_currentCandidates = new ArrayList<CharSequence>(count);
 				
 				currentQuery.moveToNext();
-				String last_ca = "";
+				String _ca = "";
 				for(int i=0;i<count;i++)
 				{
 			 		String ca = currentQuery.getString(colIdx);
 					// bz: list are sorted by sqlite3, skip repeating word(s)
-					if ( !ca.equals(last_ca) )
+					if ( !ca.equals(_ca) )
 					{
 						_currentCandidates.add(ca);
 					}
 					currentQuery.moveToNext();
-					last_ca = ca;
+					_ca = ca;
 				}
 				_core.showCandidatesView();
 				_core.setCandidates(_currentCandidates);
@@ -287,9 +371,10 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private void commitText(CharSequence str)
 	{
 		_core.commitText(str);
+		_lastInput = str.toString();
 		inputBufferRaw = "";
 		updateCandidates();
-		currentState = InputState.STATE_INPUT;
+		currentState = InputState.STATE_SUGGEST;
 	}
 	
 	private void initKeyNameData()
