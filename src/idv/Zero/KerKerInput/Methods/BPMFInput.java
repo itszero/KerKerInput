@@ -215,6 +215,8 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		{
 			if (keyCode == Keyboard.KEYCODE_DELETE)
 			{
+				_lastInput = _lastLastInput;
+				_lastLastInput = "";
 				if (inputBufferRaw.length() > 0)
 				{
 					inputBufferRaw = inputBufferRaw.substring(0, inputBufferRaw.length() - 1);
