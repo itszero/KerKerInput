@@ -6,3 +6,5 @@ release.key
 *.swp
 gen/*
 bin/*
+local.properties
+R.java
