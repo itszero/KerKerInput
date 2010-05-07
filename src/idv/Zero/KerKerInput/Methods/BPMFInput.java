@@ -174,6 +174,8 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	{
 		currentState = InputState.STATE_INPUT;
 		inputBufferRaw = "";
+		_lastInput = "";
+		_lastLastInput = "";
 		updateCandidates();
 		// Copied, re-open it.
 		db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
@@ -226,18 +228,20 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			}
 			else if (keyCode == 32) // space
 			{
-				if (_currentCandidates.size() > 0)
+				if (_currentCandidates.size() > 0 && !(currentState == InputState.STATE_SUGGEST))
 				{
 					currentState = InputState.STATE_CHOOSE;
 					handleBPMFKeyEvent(32, null);
 				}
-				else
+				else {
 					_core.getFrontend().sendKeyChar((char) keyCode);
+				}
 			}
 			else if (keyCode == 10) // RETURN
 			{
-				if (inputBufferRaw.length() > 0)
+				if (inputBufferRaw.length() > 0 && !(currentState == InputState.STATE_SUGGEST)) {
 					commitText(getCompositeString());
+				}
 				else
 					_core.getFrontend().sendKeyChar((char) keyCode);
 			}
@@ -317,11 +321,8 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				else
 					_currentPage = 0;
 				break;
-			case ' ':
-			case 10:
-				keyCode = KeyEvent.KEYCODE_0;
 			default:
-				if (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9)
+				if (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9 && (keyCode != 10 && keyCode != 32))
 				{
 				    // This prevents user hit tone symbol twice makes program crash.
 				    // It's because first sign interpreted as bpmf symbol, and second one is treated as candidate choose.
@@ -388,7 +389,10 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 						for(int i=0;i<count;i++)
 						{
 							String ca = currentQuery.getString(colIdx);
-							_currentCandidates.add(ca);
+							if (i==0)
+								_currentCandidates.add(0, ca);
+							else
+								_currentCandidates.add(ca);
 							currentQuery.moveToNext();
 						}
 						currentQuery.close();
