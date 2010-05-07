@@ -54,14 +54,12 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		_lastInput = "";
 		_lastLastInput = "";
 
-		try
-		{
+		try {
 			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 			db.setLocale(Locale.TRADITIONAL_CHINESE);
 			db.close();
 		}
-		catch(SQLiteException ex)
-		{
+		catch(SQLiteException ex) {
 			System.out.println("Error, no database file found. Copying...");
 
 			// Create the database (and the directories required) then close it.
@@ -71,11 +69,10 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			try {
 				OutputStream dos = new FileOutputStream(_dbpath);
 				InputStream dis = c.getResources().openRawResource(R.raw.bpmf);
-				byte[] buffer = new byte[4096];
-				while (dis.read(buffer) > 0)
-				{
-					dos.write(buffer);
-				}
+				int size = dis.available();
+				byte[] buffer = new byte[size];
+				dis.read(buffer);
+				dos.write(buffer);
 				dos.flush();
 				dos.close();
 				dis.close();				
@@ -85,14 +82,12 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			}			
 		}
 
-		try
-		{
+		try {
 			wordCompDB = SQLiteDatabase.openDatabase(_wordCompDBPath, null, SQLiteDatabase.OPEN_READONLY);
 			wordCompDB.setLocale(Locale.TRADITIONAL_CHINESE);
 			wordCompDB.close();
 		}
-		catch(SQLiteException ex)
-		{
+		catch(SQLiteException ex) {
 			System.out.println("Error, no database file found. Copying...");
 
 			// Create the database (and the directories required) then close it.
@@ -138,9 +133,36 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				dos.flush();
 				dos.close();
 				dis.close();				
-				Log.e("BPMFInput", "copy3 done");
 			} catch (IOException e) {
 				Log.e("BPMFInput", "excepted3: " + e.getMessage());
+				e.printStackTrace();
+			}			
+		}
+
+		try {
+			phraseCompDB = SQLiteDatabase.openDatabase(_phraseCompDBPath, null, SQLiteDatabase.OPEN_READONLY);
+			phraseCompDB.setLocale(Locale.TRADITIONAL_CHINESE);
+			phraseCompDB.close();
+		}
+		catch(SQLiteException ex) {
+			System.out.println("Error, no database file found. Copying...");
+
+			// Create the database (and the directories required) then close it.
+			phraseCompDB = c.openOrCreateDatabase("pc.db", 0, null);
+			phraseCompDB.close();
+
+			try {
+				OutputStream dos = new FileOutputStream(_phraseCompDBPath);
+				InputStream dis = c.getResources().openRawResource(R.raw.phrasecomplete);
+				int size = dis.available();
+				byte[] buffer = new byte[size];
+				dis.read(buffer);
+				dos.write(buffer);
+				dos.flush();
+				dos.close();
+				dis.close();				
+			} catch (IOException e) {
+				Log.e("BPMFInput", "excepted2: " + e.getMessage());
 				e.printStackTrace();
 			}			
 		}
@@ -156,15 +178,12 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		// Copied, re-open it.
 		db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 		db.setLocale(Locale.TRADITIONAL_CHINESE);
-		Log.e("BPMFInput", "open1 done");
 
 		wordCompDB = SQLiteDatabase.openDatabase(_wordCompDBPath, null, SQLiteDatabase.OPEN_READONLY);
 		wordCompDB.setLocale(Locale.TRADITIONAL_CHINESE);
-		Log.e("BPMFInput", "open2 done");
 
 		phraseCompDB = SQLiteDatabase.openDatabase(_phraseCompDBPath, null, SQLiteDatabase.OPEN_READONLY);
 		phraseCompDB.setLocale(Locale.TRADITIONAL_CHINESE);
-		Log.e("BPMFInput", "open3 done");
 	}
 	
 	public void onLeaveInputMethod()
@@ -192,7 +211,6 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	}
 	
 	private boolean handleBPMFKeyEvent(int keyCode, int[] keyCodes) {
-		Log.e("BPMFInput", "here in handle BPMF Key EVent");
 		if (currentState == InputState.STATE_INPUT || currentState == InputState.STATE_SUGGEST)
 		{
 			if (keyCode == Keyboard.KEYCODE_DELETE)
@@ -340,7 +358,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			{
 				_core.hideCandidatesView();
 			}
-			else 
+			else
 			{
 				try 
 				{
@@ -358,14 +376,11 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 					}
 					currentQuery.close();
 
-					Log.e("BPMFInput", "to be in phrase complete");
 					if(!(_lastInput.equals("") || _lastLastInput.equals("")))
 					{
-						Log.e("BPMFInput", "in phrase complete");
 						currentQuery = phraseCompDB.rawQuery("Select val from word_complete where key = '" + _lastLastInput + _lastInput + "' ORDER BY cnt DESC", null);
 						count = currentQuery.getCount();
 						colIdx = currentQuery.getColumnIndex("val");
-						_currentCandidates = new ArrayList<CharSequence>(count);
 						
 						currentQuery.moveToNext();
 						for(int i=0;i<count;i++)
@@ -379,7 +394,32 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 
 					_core.showCandidatesView();
 					_core.setCandidates(_currentCandidates);
-					_lastInput = "";
+					currentQuery.close();
+				}
+				catch(Exception e) 
+				{
+					Log.e("BPMFInput", "" + e.getMessage());
+				}
+				finally {}
+			}
+			if ((!_lastInput.equals("")) && (!_lastLastInput.equals("")))
+			{
+				try 
+				{
+					Cursor currentQuery = phraseCompDB.rawQuery("Select val from word_complete where key = '" + _lastLastInput + _lastInput + "' ORDER BY cnt DESC", null);
+					int count = currentQuery.getCount();
+					int colIdx = currentQuery.getColumnIndex("val");
+					
+					currentQuery.moveToNext();
+					for(int i=0;i<count;i++)
+					{
+						String ca = currentQuery.getString(colIdx);
+						_currentCandidates.add(ca);
+						currentQuery.moveToNext();
+					}
+					_core.showCandidatesView();
+					_core.setCandidates(_currentCandidates);
+					currentQuery.close();
 				}
 				catch(Exception e) 
 				{
@@ -457,8 +497,22 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private void commitText(CharSequence str)
 	{
 		_core.commitText(str);
-		_lastLastInput = _lastInput;
-		_lastInput = str.toString();
+		String _history = (_lastInput + str.toString()) ;
+		int _length = _history.length();
+
+		if (_length >=2) {
+			_lastInput = _history.substring(_length-1);
+			_lastLastInput = _history.substring(_length-2, _length-1);
+		}
+		else if (_length == 1) {
+			_lastInput = _history.substring(_length-1);
+			_lastLastInput = "";
+		}
+		else {
+			_lastInput = "";
+			_lastLastInput = "";
+		}
+
 		inputBufferRaw = "";
 		updateCandidates();
 		currentState = InputState.STATE_SUGGEST;
