@@ -2,6 +2,7 @@ package idv.Zero.KerKerInput;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.util.Log;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -79,6 +80,7 @@ public class CandidatesView extends View {
 		_currentPage = 0;
 		scrollStartCandID = 0;
 		invalidate();
+		Log.i("CandidateView", lst.toString());
 	}
 	
 	public void setCore(KerKerInputCore core)
@@ -90,7 +92,7 @@ public class CandidatesView extends View {
 	protected void onDraw(Canvas canvas)
 	{
 		super.onDraw(canvas);
-		
+
 		int x = 0, page = 0;
 		int y = (int) (getHeight() + _pntText.getTextSize() - _pntText.descent()) / 2;
 		int count = _cands.size();
@@ -112,13 +114,14 @@ public class CandidatesView extends View {
 			{
 				page++;
 				x = 0;
+				i--;
 				continue;
 			}
 			
 			if (i < scrollStartCandID || page != _currentPage) {
-                            x += cellWidth + _divider.getIntrinsicWidth();
-                            continue;
-                        }
+        x += cellWidth + _divider.getIntrinsicWidth();
+        continue;
+      }
 			
 			canvas.translate(x, 0);
 			if (isCandSelected(x, x + (int)cellWidth))
@@ -135,7 +138,7 @@ public class CandidatesView extends View {
 			canvas.translate(-cellWidth, 0);
 
 			canvas.translate(-x, 0);
-                        x += cellWidth + _divider.getIntrinsicWidth();
+      x += cellWidth + _divider.getIntrinsicWidth();
 		}
 		_core.getCurrentInputMethod().setTotalPages(page + 1);
 	}
@@ -147,88 +150,88 @@ public class CandidatesView extends View {
 			return false;
 	}
 
-    @Override
-    public boolean onTouchEvent(MotionEvent me) {
-    	
-    	if (me.getAction() == MotionEvent.ACTION_UP || me.getAction() == MotionEvent.ACTION_OUTSIDE)
-    	{
-        	if (me.getAction() == MotionEvent.ACTION_UP)
-        		commitCandidates();
-        	hidePopup();
-    	}
-    	else if (me.getAction() == MotionEvent.ACTION_DOWN || me.getAction() == MotionEvent.ACTION_MOVE)
-        	_lastTouchedX = (int) me.getX();
-    	
-    	
-    	invalidate();    	
-    	return true;
-    }
+  @Override
+  public boolean onTouchEvent(MotionEvent me) {
     
-    private void commitCandidates() {
-    	if (_currentCandidate == OUT_OF_BOUND)
-    		return;
-    	
-    	_core.commitCandidate(_currentCandidate);
+    if (me.getAction() == MotionEvent.ACTION_UP || me.getAction() == MotionEvent.ACTION_OUTSIDE)
+    {
+        if (me.getAction() == MotionEvent.ACTION_UP)
+          commitCandidates();
+        hidePopup();
+    }
+    else if (me.getAction() == MotionEvent.ACTION_DOWN || me.getAction() == MotionEvent.ACTION_MOVE)
+        _lastTouchedX = (int) me.getX();
+    
+    
+    invalidate();    	
+    return true;
+  }
+  
+  private void commitCandidates() {
+    if (_currentCandidate == OUT_OF_BOUND)
+      return;
+    
+    _core.commitCandidate(_currentCandidate);
 	}
 
 	private void showPopup(int candIndex)
-    {
-		_currentCandidate = candIndex;
-		
-    	CharSequence str = _cands.get(candIndex);
-    	_txtPreview.setText(str);
-    	_txtPreview.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-    	int wordWidth = (int)(_pntText.measureText(str.toString()));
-    	int popupWidth = wordWidth + _txtPreview.getPaddingLeft() + _txtPreview.getPaddingRight();
-    	int popupHeight = _txtPreview.getMeasuredHeight();
-    	int popupX = _candIdxToX[candIndex] - _scrollX + (popupWidth - _wordWidth) / 2 + 8; // 8?
-    	int popupY = -popupHeight;
-    	
-    	int[] offset = new int[2];
-    	getLocationInWindow(offset);
-    	popupY += offset[1];
-    	
-    	if (_winPreview.isShowing())
-    		_winPreview.update(popupX, popupY, popupWidth, popupHeight);
-    	else
-    	{
-    		_winPreview.setWidth(popupWidth);
-    		_winPreview.setHeight(popupHeight);
-    		_winPreview.showAtLocation(this, Gravity.NO_GRAVITY, popupX, popupY);
-    	}
-    	_txtPreview.setVisibility(VISIBLE);
-    }
+  {
+    _currentCandidate = candIndex;
+      
+    CharSequence str = _cands.get(candIndex);
+    _txtPreview.setText(str);
+    _txtPreview.measure(MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+    int wordWidth = (int)(_pntText.measureText(str.toString()));
+    int popupWidth = wordWidth + _txtPreview.getPaddingLeft() + _txtPreview.getPaddingRight();
+    int popupHeight = _txtPreview.getMeasuredHeight();
+    int popupX = _candIdxToX[candIndex] - _scrollX + (popupWidth - _wordWidth) / 2 + 8; // 8?
+    int popupY = -popupHeight;
     
-    private void hidePopup()
+    int[] offset = new int[2];
+    getLocationInWindow(offset);
+    popupY += offset[1];
+    
+    if (_winPreview.isShowing())
+      _winPreview.update(popupX, popupY, popupWidth, popupHeight);
+    else
     {
-    	_winPreview.dismiss();
-    	_lastTouchedX = OUT_OF_BOUND;
-    	_currentCandidate = OUT_OF_BOUND;
+      _winPreview.setWidth(popupWidth);
+      _winPreview.setHeight(popupHeight);
+      _winPreview.showAtLocation(this, Gravity.NO_GRAVITY, popupX, popupY);
     }
+    _txtPreview.setVisibility(VISIBLE);
+  }
+  
+  private void hidePopup()
+  {
+    _winPreview.dismiss();
+    _lastTouchedX = OUT_OF_BOUND;
+    _currentCandidate = OUT_OF_BOUND;
+  }
 
-    public void prevPage()
-    {
-    	if (_currentPage == 0) return;
-    	
-    	_currentPage--;
-    	while(scrollStartCandID >= 0 && _candIdxToPage[scrollStartCandID] > _currentPage - 1)
-    		scrollStartCandID--;
-    	
-    	scrollStartCandID++;
-    	_core.getCurrentInputMethod().setCurrentPage(_currentPage);
-    }
+  public void prevPage()
+  {
+    if (_currentPage == 0) return;
+    
+    _currentPage--;
+    while(scrollStartCandID >= 0 && _candIdxToPage[scrollStartCandID] > _currentPage - 1)
+      scrollStartCandID--;
+    
+    scrollStartCandID++;
+    _core.getCurrentInputMethod().setCurrentPage(_currentPage);
+  }
 
-    public void nextPage()
+  public void nextPage()
+  {
+    _currentPage++;
+    while(scrollStartCandID < _cands.size() && _candIdxToPage[scrollStartCandID] < _currentPage)
+      scrollStartCandID++;
+    
+    if (scrollStartCandID == _cands.size())
     {
-    	_currentPage++;
-    	while(scrollStartCandID < _cands.size() && _candIdxToPage[scrollStartCandID] < _currentPage)
-    		scrollStartCandID++;
-    	
-    	if (scrollStartCandID == _cands.size())
-    	{
-    		scrollStartCandID--;
-    		prevPage();
-    	}
-    	_core.getCurrentInputMethod().setCurrentPage(_currentPage);
+      scrollStartCandID--;
+      prevPage();
     }
+    _core.getCurrentInputMethod().setCurrentPage(_currentPage);
+  }
 }
