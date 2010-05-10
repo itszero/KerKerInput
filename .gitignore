@@ -3,3 +3,8 @@ bin
 bak
 noseeing.db
 release.key
+*.swp
+gen/*
+bin/*
+local.properties
+R.java
