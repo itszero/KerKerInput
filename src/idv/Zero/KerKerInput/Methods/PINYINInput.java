@@ -141,6 +141,33 @@ public class PINYINInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				else
 					_core.getFrontend().sendKeyChar((char) keyCode);
 			}
+			else if (keyCode == 44){
+				_core.commitText("，");
+			}
+			else if (keyCode == 46){
+				_core.commitText("。");
+			}
+			else if (keyCode == 63){
+				_core.commitText("？");
+			}
+			else if (keyCode == 33){
+				_core.commitText("！");
+			}
+			else if (keyCode == 54){
+				_core.commitText("…");
+			}
+			else if (keyCode == 55){
+				_core.commitText("：");
+			}
+			else if (keyCode == 56){
+				_core.commitText("「");
+			}
+			else if (keyCode == 57){
+				_core.commitText("」");
+			}
+			else if (keyCode == 48){
+				_core.commitText("、");
+			}
 			else
 			{
 				char c = (char)keyCode,cx=0;
@@ -190,12 +217,6 @@ public class PINYINInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 							cx='b';
 						break;
 					case 'i':
-/*						if(last2 == 'z' && last == 'h')
-							cx = '5';
-						else if(last2 == 'c' && last == 'h')
-							cx = 't';
-						else if(last2 == 's' && last == 'h')
-							cx = 'g';*/
 						if(last == 'y' || last == 'h' || last == 'r' || last == 'z' || last == 'c' || last == 'r'){
 							last2 = last;
 							last = c;
@@ -242,80 +263,13 @@ public class PINYINInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 					default :
 						if (N2K.containsKey(c))
 							cx=N2K.get(c);
-
-/*					case 'b':
-						cx='1';
-						break;
-					case 'p':
-						cx='q';
-						break;
-					case 'm':
-						cx='a';
-						break;
-					case 'f':
-						cx='z';
-						break;
-					case 'd':
-						cx='2';
-						break;
-					case 't':
-						cx='w';
-						break;
-					case 'l':
-						cx='x';
-						break;
-					case 'k':
-						cx='d';
-						break;
-					case 'j':
-						cx='r';
-						break;
-					case 'q':
-						cx='f';
-						break;
-					case 'x':
-						cx='v';
-						break;
-					case 'z':
-						cx='y';
-						break;
-					case 'c':
-						cx='h';
-						break;
-					case 's':
-						cx='n';
-						break;
-					case 'y':
-						cx='u';
-						break;
-					case 'w':
-						cx='j';
-						break;
-					case 'v':
-						cx='m';
-						break;
-					case 'a':
-						cx='8';
-						break;
-					case '3':
-						cx='3';
-						break;
-					case '4':
-						cx='4';
-						break;
-					case '2':
-						cx='6';
-						break;
-					case '5':
-						cx='7';
-						break;*/
 				}
 				last2=last;
 				last=c;
 				inputBufferRaw = ZhuYinComponentHelper.getComposedRawString(inputBufferRaw, Character.toString(cx));
 				
 				// 如果是音調符號，直接進入選字模式。
-				if (inputBufferRaw.length() > 0 && (cx == '3' || cx == '4' || cx == '6' || cx == '7')){
+				if (inputBufferRaw.length() > 0 && (cx == '1' || cx == '3' || cx == '4' || cx == '6' || cx == '7')){
 					currentState = InputState.STATE_CHOOSE;
 				}
 
