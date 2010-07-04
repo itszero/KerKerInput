@@ -617,7 +617,7 @@ public class PINYINInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				inputBufferRaw = inputBufferRaw.substring(0, inputBufferRaw.length() - 1);
 				_currentCandidates.clear();
 				_core.setCompositeBuffer(getCompositeString());
-				_core.showPopup(R.string.no_such_mapping);
+				//_core.showPopup(R.string.no_such_mapping);
 				_core.hideCandidatesView();
 				currentState = InputState.STATE_INPUT;
 				updateCandidates();
