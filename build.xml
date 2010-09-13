@@ -86,6 +86,6 @@
     </target>
 
     <target name="signjar">
-      	<signjar jar="bin/KerKerInput-unsigned.apk" signedjar="bin/KerKerInput-Release.apk" alias="kki_release" keystore="release.key" storepass="${STOREPASS}" />
+      	<signjar jar="bin/KerKerInput-unsigned.apk" signedjar="bin/KerKerInput-Release.apk" alias="ksq_release" keystore="release.key" storepass="${STOREPASS}" />
     </target>
 </project>
