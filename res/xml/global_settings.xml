@@ -24,6 +24,12 @@
 		                android:defaultValue="true"
 		                android:enabled="true"/>
 		        <CheckBoxPreference
+		                android:key="enable_pinyin"
+		                android:title="拼音輸入法"
+		                android:summary=""
+		                android:defaultValue="false"
+		                android:enabled="true"/>
+		        <CheckBoxPreference
 		                android:key="enable_cj5"
 		                android:title="倉頡輸入法"
 		                android:summary=""

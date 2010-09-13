@@ -20,12 +20,13 @@ import idv.Zero.KerKerInput.Keyboard;
 import idv.Zero.KerKerInput.R;
 import idv.Zero.KerKerInput.Methods.BPMFInputHelpers.ZhuYinComponentHelper;
 
-public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
+public class PINYINInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private enum InputState {STATE_INPUT, STATE_CHOOSE, STATE_SUGGEST};
 	private InputState currentState;
 	private String inputBufferRaw = "";
 	private List<CharSequence> _currentCandidates;
 	private HashMap<Character, String> K2N;
+	private HashMap<Character, Character> N2K;
 	private String _dbpath;
 	private String _wordCompDBPath;
 	private String _phraseCompDBPath;
@@ -33,11 +34,17 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 	private String _lastLastInput;
 	private int _currentPage;
 	private int _totalPages;
-	
+
 	private SQLiteDatabase db;
 	private SQLiteDatabase wordCompDB;
 	private SQLiteDatabase phraseCompDB;
-	
+
+	private char last;
+	private char last2;
+	private char last3;
+	private boolean sound_one;
+	private boolean key_blank;
+
 	public void initInputMethod(KerKerInputCore core) {
 		super.initInputMethod(core);
 		
@@ -54,12 +61,14 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		_lastInput = "";
 		_lastLastInput = "";
 
-		try {
+		try
+		{
 			db = SQLiteDatabase.openDatabase(_dbpath, null, SQLiteDatabase.OPEN_READONLY);
 			db.setLocale(Locale.TRADITIONAL_CHINESE);
 			db.close();
 		}
-		catch(SQLiteException ex) {
+		catch(SQLiteException ex)
+		{
 			System.out.println("Error, no database file found. Copying...");
 
 			// Create the database (and the directories required) then close it.
@@ -75,10 +84,10 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				dos.write(buffer);
 				dos.flush();
 				dos.close();
-				dis.close();				
+				dis.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-				Log.e("BPMFInput", "excepted1: " + e.getMessage());
+				Log.e("PINYINInput", "excepted1: " + e.getMessage());
 			}			
 		}
 
@@ -105,7 +114,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				dos.close();
 				dis.close();				
 			} catch (IOException e) {
-				Log.e("BPMFInput", "excepted2: " + e.getMessage());
+				Log.e("PINYINInput", "excepted2: " + e.getMessage());
 				e.printStackTrace();
 			}			
 		}
@@ -134,7 +143,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				dos.close();
 				dis.close();				
 			} catch (IOException e) {
-				Log.e("BPMFInput", "excepted3: " + e.getMessage());
+				Log.e("PINYINInput", "excepted3: " + e.getMessage());
 				e.printStackTrace();
 			}			
 		}
@@ -162,11 +171,10 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				dos.close();
 				dis.close();				
 			} catch (IOException e) {
-				Log.e("BPMFInput", "excepted2: " + e.getMessage());
+				Log.e("PINYINInput", "excepted2: " + e.getMessage());
 				e.printStackTrace();
 			}			
 		}
-
 
 	}
 	
@@ -186,47 +194,49 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 
 		phraseCompDB = SQLiteDatabase.openDatabase(_phraseCompDBPath, null, SQLiteDatabase.OPEN_READONLY);
 		phraseCompDB.setLocale(Locale.TRADITIONAL_CHINESE);
-	}
-	
+	}        
+	         
 	public void onLeaveInputMethod()
-	{
+	{        
 		db.close();
 		wordCompDB.close();
 		phraseCompDB.close();
-	}
-	
+	}        
+	         
 	public String getName()
-	{
-		return "注音";
-	}
-
+	{        
+		return "拼音";
+	}        
+                 
 	public Keyboard getDesiredKeyboard() {
-		return new Keyboard(_core.getFrontend(), R.xml.kb_zhuyin, R.id.mode_normal);
-	}
-
+		return new Keyboard(_core.getFrontend(), R.xml.kb_pinyin, R.id.mode_normal);
+	}        
+                 
 	public void commitCurrentComposingBuffer() {
 		commitText(getCompositeString());
-	}
-
+	}        
+                 
 	public boolean onKeyEvent(int keyCode, int[] keyCodes) {
 		return handleBPMFKeyEvent(keyCode, keyCodes);
-	}
-	
+	}        
+	         
 	private boolean handleBPMFKeyEvent(int keyCode, int[] keyCodes) {
 		if (currentState == InputState.STATE_INPUT || currentState == InputState.STATE_SUGGEST)
 		{
-			if (keyCode == Keyboard.KEYCODE_DELETE)
-			{
-				_lastInput = _lastLastInput;
-				_lastLastInput = "";
-				if (inputBufferRaw.length() > 0)
-				{
-					inputBufferRaw = inputBufferRaw.substring(0, inputBufferRaw.length() - 1);
-				}
-				else
-					_core.getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
+		        if (keyCode == Keyboard.KEYCODE_DELETE)
+		        {
+				last3 = last = last2 = 0;
+				if (inputBufferRaw.length() == 0)
+		        		_core.getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
+
+		        	while (inputBufferRaw.length() > 0)
+		        	{
+		        		inputBufferRaw = inputBufferRaw.substring(0, inputBufferRaw.length() - 1);
+		        	}
+		        	//else
+		        	//        _core.getFrontend().sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
 			}
-			else if (keyCode == 32) // space
+			/*else if (keyCode == 32) // space
 			{
 				if (_currentCandidates.size() > 0 && !(currentState == InputState.STATE_SUGGEST))
 				{
@@ -236,7 +246,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				else {
 					_core.getFrontend().sendKeyChar((char) keyCode);
 				}
-			}
+			}*/
 			else if (keyCode == 10) // RETURN
 			{
 				if (inputBufferRaw.length() > 0 && !(currentState == InputState.STATE_SUGGEST)) {
@@ -247,12 +257,161 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 			}
 			else
 			{
-				char c = (char)keyCode;
-				inputBufferRaw = ZhuYinComponentHelper.getComposedRawString(inputBufferRaw, Character.toString(c));
+				char c = (char)keyCode,cx=0;
+				switch(c){
+					case 'n':
+						if(last == 'a')
+							cx='0';
+						else if(last == 'e' || last == 'i' || last == 'u'|| last == 'v')
+							cx='p';
+						else if(last == 'o'){
+							cx='m';
+							last3 = last2;
+							last2 = last;
+							last = c;
+							return true;
+						}
+						else
+							cx='s';
+						break;
+					case 'g':
+						if(last2 == 'a' && last == 'n')
+							cx=';';
+						else if((last3 == 'i' || last3 =='y')  && (last2 == 'o' && last == 'n')){
+							inputBufferRaw = ZhuYinComponentHelper.getComposedRawString(inputBufferRaw, Character.toString('m'));
+							cx='/';
+						}
+						else if(last2 == 'o' && last == 'n'){
+							inputBufferRaw = ZhuYinComponentHelper.getComposedRawString(inputBufferRaw, Character.toString('j'));
+							cx='/';
+						}
+						else if(last == 'n'){
+		        				//inputBufferRaw = inputBufferRaw.substring(0, inputBufferRaw.length() - 1);
+							cx='/';
+						}
+						else
+							cx='e';
+						break;
+					case 'h':
+						if(last == 'z')
+							cx = '5';
+						else if(last == 'c')
+							cx = 't';
+						else if(last == 's')
+							cx = 'g';
+						else
+							cx = 'c';
+						break;
+					case 'r':
+						if(last == 'e')
+							cx='-';
+						else
+							cx='b';
+						break;
+					case 'i':
+						if(last == 'y' || last == 'h' || last == 'r' || last == 'z' || last == 'c' || last == 'r'){
+							last3 = last2;
+							last2 = last;
+							last = c;
+							return true;
+						}
+						else if(last == 'a')
+							cx = '9';
+						else if(last == 'e')
+							cx = 'o';
+						else if(last == 'u')
+							cx = 'o';
+						else
+							cx='u';
+						break;
+					case 'u':
+						if(last == 'o')
+							cx = '.';
+						else if(last == 'i')
+							cx = '.';
+						else if(last == 'y')
+							cx = 'm';
+						else if(last == 'j' || last == 'q' || last == 'x' || last == 'u' || last == 'y')
+							cx = 'm';
+						else
+							cx='j';
+						break;
+					case 'o':
+						if(last == 'a')
+							cx = 'l';
+						else if(last == 'i' && last2 !=0){
+							last3 = last2;
+							last2 = last;
+							last = c;
+							return true;
+						}
+						else
+							cx='i';
+						break;
+					case 'e':
+						if(last == 'y' ||last == 'i' ||last == 'u' ||   last == 'v')
+							cx=',';
+						else
+							cx='k';
+						break;
+					case ',':
+						if(inputBufferRaw.length() == 0)
+							_core.commitText("，");
+						return true;
+					case '.':
+						if(inputBufferRaw.length() == 0)
+							_core.commitText("。");
+						return true;
+					case '?':
+						if(inputBufferRaw.length() == 0)
+							_core.commitText("？");
+						return true;
+					case '!':
+						if(inputBufferRaw.length() == 0)
+							_core.commitText("！");
+						return true;
+					case '6':
+						if(inputBufferRaw.length() == 0)
+							_core.commitText("：");
+						return true;
+					case '7':
+						if(inputBufferRaw.length() == 0)
+							_core.commitText("「");
+						return true;
+					case '8':
+						if(inputBufferRaw.length() == 0)
+							_core.commitText("」");
+						return true;
+					case '9':
+						if(inputBufferRaw.length() == 0)
+							_core.commitText("、");
+						return true;
+					case '0':
+						if(inputBufferRaw.length() == 0)
+							_core.commitText("…");
+						return true;
+					case ' ':
+						if(inputBufferRaw.length() == 0)
+							_core.commitText(" ");
+						return true;
+					default :
+						if (N2K.containsKey(c))
+							cx=N2K.get(c);
+				}
+				last3=last2;
+				last2=last;
+				last=c;
+				inputBufferRaw = ZhuYinComponentHelper.getComposedRawString(inputBufferRaw, Character.toString(cx));
 				
 				// 如果是音調符號，直接進入選字模式。
-				if (inputBufferRaw.length() > 0 && (c == '3' || c == '4' || c == '6' || c == '7'))
+				if (inputBufferRaw.length() > 0 && (c == ' ' || c == '1' || cx == '3' || cx == '4' || cx == '6' || cx == '7')){
+					if(c=='1')
+						sound_one=true;
+					else if(c==' ')
+						key_blank=true;
 					currentState = InputState.STATE_CHOOSE;
+				}
+
 			}
 			_core.setCompositeBuffer(getCompositeString());
 			updateCandidates();
@@ -270,7 +429,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 					updateCandidates();
 				}
 				else
-					Log.e("BPMFInput", "InputBuffer is requested to delete, but the buffer is empty");
+					Log.e("PINYINInput", "InputBuffer is requested to delete, but the buffer is empty");
 				
 				break;
 			// TODO: Make sure DPad & Keyboard L/R keyCode
@@ -303,6 +462,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				        commitCandidate(_currentPage * CANDIDATES_PER_PAGE + keyCode - KeyEvent.KEYCODE_0 - 1);
 				    }
 				}
+				last3=last=last2=0;
 				break;
 			}
 		}
@@ -349,6 +509,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		{
 			if (K2N.containsKey(inputBufferRaw.charAt(i)))
 				str.append(K2N.get(inputBufferRaw.charAt(i)));
+//			str.append(inputBufferRaw.charAt(i));
 		}
 		return str.toString();
 	}
@@ -438,14 +599,25 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		
 		try
 		{
-			// Cursor currentQuery = db.rawQuery("Select val from bpmf where key glob '" + inputBufferRaw.toString() + "*'", null);
-			Cursor currentQuery = db.rawQuery("Select val from bpmf where key >= '" + inputBufferRaw.toString() + "' AND key < '" + inputBufferRaw.toString() + "zzz' ORDER BY cnt DESC", null);
+			String query;
+			if(sound_one){
+				query = "Select val from bpmf where key = '" + inputBufferRaw.toString() + "'";
+				sound_one = false;
+			}
+			else if(key_blank){
+				query = "Select val from bpmf where key = '" + inputBufferRaw.toString() + "' OR key = '" + inputBufferRaw.toString() + "7'";
+				key_blank = false;
+			}
+			else{
+				query = "Select val from bpmf where key >= '" + inputBufferRaw.toString() + "' AND key < '" + inputBufferRaw.toString() + "zzz'";
+			}
+			Cursor currentQuery = db.rawQuery(query, null);
 			if (currentQuery.getCount() == 0)
 			{
 				inputBufferRaw = inputBufferRaw.substring(0, inputBufferRaw.length() - 1);
 				_currentCandidates.clear();
 				_core.setCompositeBuffer(getCompositeString());
-				_core.showPopup(R.string.no_such_mapping);
+				//_core.showPopup(R.string.no_such_mapping);
 				_core.hideCandidatesView();
 				currentState = InputState.STATE_INPUT;
 				updateCandidates();
@@ -460,7 +632,7 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 				String _ca = "";
 				for(int i=0;i<count;i++)
 				{
-			 		String ca = currentQuery.getString(colIdx);
+					String ca = currentQuery.getString(colIdx);
 					// bz: list are sorted by sqlite3, skip repeating word(s)
 					if ( !ca.equals(_ca) )
 					{
@@ -568,5 +740,37 @@ public class BPMFInput extends idv.Zero.KerKerInput.IKerKerInputMethod {
 		K2N.put('x', "ㄌ");
 		K2N.put('y', "ㄗ");
 		K2N.put('z', "ㄈ");
+		N2K = new HashMap<Character, Character>();			
+		N2K.put('b', '1');
+		N2K.put('p', 'q');
+		N2K.put('m', 'a');
+		N2K.put('f', 'z');
+		N2K.put('d', '2');
+		N2K.put('t', 'w');
+		N2K.put('n', 's');
+		N2K.put('l', 'x'); 
+		N2K.put('g', 'e'); 
+		N2K.put('k', 'd');
+		N2K.put('h', 'c');
+		N2K.put('j', 'r');
+		N2K.put('q', 'f');
+		N2K.put('x', 'v');
+		N2K.put('e', ',');
+		N2K.put('r', 'b');
+		N2K.put('z', 'y');
+		N2K.put('c', 'h');
+		N2K.put('s', 'n');
+		N2K.put('i', 'u');
+		N2K.put('u', 'j');
+		N2K.put('v', 'm');
+		N2K.put('a', '8');
+		N2K.put('o', 'i');
+		N2K.put('e', 'k');
+		N2K.put('y', 'u');
+		N2K.put('w', 'j');
+		N2K.put('3', '3');
+		N2K.put('4', '4');
+		N2K.put('2', '6');
+		N2K.put('5', '7');
 	}
 }
